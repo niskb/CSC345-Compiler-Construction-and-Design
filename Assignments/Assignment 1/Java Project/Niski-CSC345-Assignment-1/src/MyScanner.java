@@ -1,3 +1,5 @@
+import java.io.PushbackReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +18,14 @@ public class MyScanner {
     private List<String> RESERVED_WORDS = new ArrayList<String>();
 
     /**
-     * Default Constructor for MyScanner
+     * Input PushbackReader
      */
-    public MyScanner() {
+    private PushbackReader INPUT;
+
+    /**
+     * Constructor for MyScanner
+     */
+    public MyScanner(Reader input) {
         /**
          * Fill reserved words list
          */
@@ -30,6 +37,11 @@ public class MyScanner {
         RESERVED_WORDS.add("then");
         RESERVED_WORDS.add("endif");
         RESERVED_WORDS.add("calc");
+
+        /**
+         * Initialize INPUT PushbackReader
+         */
+        input = new PushbackReader(input);
     }
 
 }
