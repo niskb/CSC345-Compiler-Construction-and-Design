@@ -18,9 +18,14 @@ public class MyScanner {
     private List<String> RESERVED_WORDS = new ArrayList<String>();
 
     /**
-     * Input PushbackReader
+     * INPUT PushbackReader
      */
     private PushbackReader INPUT;
+
+    /**
+     * TOKEN BUFFER StringBuilder
+     */
+    private StringBuilder TOKEN_BUFFER = new StringBuilder();
 
     /**
      * Constructor for MyScanner
@@ -41,7 +46,7 @@ public class MyScanner {
         /**
          * Initialize INPUT PushbackReader
          */
-        input = new PushbackReader(input);
+        INPUT = new PushbackReader(input);
     }
 
 }
