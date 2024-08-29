@@ -30,23 +30,23 @@ public class MyScanner {
     /**
      * Constructor for MyScanner
      */
-    public MyScanner(Reader input) {
+    public MyScanner(PushbackReader input) {
         /**
          * Fill reserved words list
          */
-        RESERVED_WORDS.add("declare");
-        RESERVED_WORDS.add("int");
-        RESERVED_WORDS.add("print");
-        RESERVED_WORDS.add("set");
-        RESERVED_WORDS.add("if");
-        RESERVED_WORDS.add("then");
-        RESERVED_WORDS.add("endif");
-        RESERVED_WORDS.add("calc");
+        this.RESERVED_WORDS.add("declare");
+        this.RESERVED_WORDS.add("int");
+        this.RESERVED_WORDS.add("print");
+        this.RESERVED_WORDS.add("set");
+        this.RESERVED_WORDS.add("if");
+        this.RESERVED_WORDS.add("then");
+        this.RESERVED_WORDS.add("endif");
+        this.RESERVED_WORDS.add("calc");
 
         /**
          * Initialize INPUT PushbackReader
          */
-        INPUT = new PushbackReader(input);
+        this.INPUT = input;
     }
 
 }
