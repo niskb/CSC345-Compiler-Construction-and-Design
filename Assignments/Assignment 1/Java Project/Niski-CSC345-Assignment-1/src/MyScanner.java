@@ -1,3 +1,6 @@
+/**
+ * Brian Niski
+ */
 import java.io.PushbackReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +57,17 @@ public class MyScanner {
      * @throws Exception
      */
     public TOKEN scan() throws Exception {
+        // Not implemented yet, placeholder return statement
+        return TOKEN.INTDATATYPE;
+    }
 
+    // This method is not tested yet
+    /**
+     * Method to get the token buffer string
+     * @return
+     */
+    public String getTokenBufferString() {
+        return TOKEN_BUFFER.toString();
     }
 
 }
