@@ -1,5 +1,4 @@
 import java.io.PushbackReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +46,15 @@ public class MyScanner {
          * Initialize INPUT PushbackReader
          */
         this.INPUT = input;
+    }
+
+    /**
+     * Method to scan one token from the input
+     * @return
+     * @throws Exception
+     */
+    public TOKEN scan() throws Exception {
+
     }
 
 }
