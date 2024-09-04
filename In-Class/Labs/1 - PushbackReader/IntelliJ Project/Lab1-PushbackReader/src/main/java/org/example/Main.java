@@ -27,7 +27,7 @@ public class Main {
                 readCharInt = pbr.read();
                 if(readCharInt != -1) {
                     char readChar = (char) readCharInt;
-                    showMessagesForEachCharacterCategory(readChar);
+                    showMessagesForEachCharacterCategory(pbr, readChar);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -41,24 +41,78 @@ public class Main {
         }
     }
 
-    private static void showMessagesForEachCharacterCategory(char readChar) {
+    private static void showMessagesForEachCharacterCategory(PushbackReader pbr, char readChar) {
         if (Character.isLetter(readChar)) {
-            System.out.printf("%c %s\n", readChar, "Letter");
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " String");
         }
-        if (Character.isDigit(readChar)) {
-            System.out.printf("%c %s\n", readChar, "Digit");
+        else if (Character.isDigit(readChar)) {
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " Digit");
         }
-        if (Character.isSpaceChar(readChar)) {
-            System.out.printf("%c %s\n", readChar, "Space");
+        else if (Character.isSpaceChar(readChar)) {
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " Space");
         }
-        if (readChar == ':') {
-            System.out.printf("%c %s\n", readChar, "Colon");
+        else if (readChar == ':') {
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " Colon");
         }
-        if (readChar == ',') {
-            System.out.printf("%c %s\n", readChar, "Comma");
+        else if (readChar == ',') {
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " Comma");
         }
-        if (readChar == '\"') {
-            System.out.printf("%c %s\n", readChar, "Double quote");
+        else if (readChar == '\"') {
+            StringBuilder buffer = new StringBuilder().append(readChar);
+            while (Character.isLetter(readChar)) {
+                try {
+                    readChar = (char) pbr.read();
+                    buffer.append(readChar);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            System.out.println(buffer.toString() + " Double Quote");
         }
     }
 
