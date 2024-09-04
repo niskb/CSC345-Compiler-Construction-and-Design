@@ -1,6 +1,7 @@
 /**
  * Brian Niski
  */
+
 import java.io.PushbackReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,17 +54,33 @@ public class MyScanner {
 
     /**
      * Method to scan one token from the input
+     *
      * @return
      * @throws Exception
      */
     public TOKEN scan() throws Exception {
-        // Not implemented yet, placeholder return statement
-        return TOKEN.INTDATATYPE;
+        int read = INPUT.read();
+        // we can use a while loop and exit when -1
+        
+        if (read != -1) { // return token if match found
+            char readChar = (char) read;
+            String readToken = "" + readChar;
+            // if statement needed for first char in token is a digit otherwise not INTLITERAL
+            
+
+            // need to check next characters after then build token
+            // if read matches token, stop and return that token
+        } else { // no character has been read or empty program
+            INPUT.close();
+        }
+        return TOKEN.SCANEOF;
     }
 
     // This method is not tested yet
+
     /**
      * Method to get the token buffer string
+     *
      * @return
      */
     public String getTokenBufferString() {
