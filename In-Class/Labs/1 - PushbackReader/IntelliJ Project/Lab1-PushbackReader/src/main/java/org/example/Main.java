@@ -27,7 +27,7 @@ public class Main {
                 readCharInt = pbr.read();
                 if(readCharInt != -1) {
                     char readChar = (char) readCharInt;
-                    System.out.println(readChar);
+                    showMessagesForEachCharacterCategory(readChar);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -38,6 +38,27 @@ public class Main {
             fr.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void showMessagesForEachCharacterCategory(char readChar) {
+        if (Character.isLetter(readChar)) {
+            System.out.printf("%c %s\n", readChar, "Letter");
+        }
+        if (Character.isDigit(readChar)) {
+            System.out.printf("%c %s\n", readChar, "Digit");
+        }
+        if (Character.isSpaceChar(readChar)) {
+            System.out.printf("%c %s\n", readChar, "Space");
+        }
+        if (readChar == ':') {
+            System.out.printf("%c %s\n", readChar, "Colon");
+        }
+        if (readChar == ',') {
+            System.out.printf("%c %s\n", readChar, "Comma");
+        }
+        if (readChar == '\"') {
+            System.out.printf("%c %s\n", readChar, "Double quote");
         }
     }
 
