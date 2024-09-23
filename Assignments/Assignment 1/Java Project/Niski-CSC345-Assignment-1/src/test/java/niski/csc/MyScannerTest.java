@@ -220,7 +220,7 @@ class MyScannerTest {
     @Test
     void scanSixth() {
         // Arrange
-        String testString = "if x = y then \n print x \n endif";
+        String testString = "if x = y then\n print x \n endif";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
         // First Act
