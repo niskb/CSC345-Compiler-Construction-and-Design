@@ -1,8 +1,4 @@
-/**
- * Brian Niski
- */
-
-package org.example;
+package niski.csc;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +11,7 @@ class MyScannerTest {
 
     @Test
     void scanFirst() {
-        // Assign
+        // Arrange
         String testString = "declare x int";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -49,7 +45,7 @@ class MyScannerTest {
 
     @Test
     void scanSecond() {
-        // Assign
+        // Arrange
         String testString = "set x = 5";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -92,7 +88,7 @@ class MyScannerTest {
 
     @Test
     void scanThird() {
-        // Assign
+        // Arrange
         String testString = "calc x + y";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -135,7 +131,7 @@ class MyScannerTest {
 
     @Test
     void scanFourth() {
-        // Assign
+        // Arrange
         String testString = "print x";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -160,7 +156,7 @@ class MyScannerTest {
 
     @Test
     void scanFifth() {
-        // Assign
+        // Arrange
         String testString = "if x = y then \n endif";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -209,9 +205,7 @@ class MyScannerTest {
         // Fifth Assert
         assertEquals(String.valueOf("" + MyScanner.TOKEN.IF + MyScanner.TOKEN.ID + MyScanner.TOKEN.EQUALS + MyScanner.TOKEN.ID + MyScanner.TOKEN.THEN), String.valueOf(myScanner.getTokenBufferString()));
 
-        /**
-         *  We are in the if statement, so the code "jumps" into another set of curly braces.
-         */
+        // We are in the if statement, so the code "jumps" into another set of curly braces.
 
         // Sixth Act
         try {
@@ -225,7 +219,7 @@ class MyScannerTest {
 
     @Test
     void scanSixth() {
-        // Assign
+        // Arrange
         String testString = "if x = y then \n print x \n endif";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 
@@ -274,9 +268,7 @@ class MyScannerTest {
         // Fifth Assert
         assertEquals(String.valueOf("" + MyScanner.TOKEN.IF + MyScanner.TOKEN.ID + MyScanner.TOKEN.EQUALS + MyScanner.TOKEN.ID + MyScanner.TOKEN.THEN), String.valueOf(myScanner.getTokenBufferString()));
 
-        /**
-         *  We are in the if statement, so the code "jumps" into another set of curly braces.
-         */
+        // We are in the if statement, so the code "jumps" into another set of curly braces.
 
         // Sixth Act
         try {
@@ -290,7 +282,7 @@ class MyScannerTest {
 
     @Test
     void scanSeventh() {
-        // Assign
+        // Arrange
         String testString = "";
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(testString)));
 

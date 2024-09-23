@@ -2,7 +2,7 @@
  * Brian Niski
  */
 
-package org.example;
+package niski.csc;
 
 import java.io.PushbackReader;
 import java.util.ArrayList;
