@@ -72,7 +72,6 @@ public class MyScanner {
                 while (Character.isDigit(c)) {
                     c = INPUT.read();
                 }
-                INPUT.unread(c);
                 TOKEN_BUFFER.append(TOKEN.INTLITERAL + "\n");
                 return TOKEN.INTLITERAL;
             } else if (c == '+') {
@@ -88,7 +87,6 @@ public class MyScanner {
                     if (Character.isLetter(c)) {
                         buffer.append((char) c);
                     } else {
-                        INPUT.unread(c);
                         break;
                     }
                 }
