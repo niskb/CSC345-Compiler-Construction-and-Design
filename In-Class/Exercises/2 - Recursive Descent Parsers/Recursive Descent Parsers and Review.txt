@@ -1,0 +1,97 @@
+Tokens: ID, EQUALS, INTLITERAL, EOF
+Assume the following grammar:
+S → id = intliteral
+
+parse() {
+	nextToken = getNextToken();
+	S()
+	if (nextToken == EOF) {
+		print "Success"
+	} else {
+		print "Unmatched EOF"
+	}
+}
+
+S() {
+	if (nextToken == ID) {
+		getNextToken();
+		if (nextToken == EQUALS) {
+			getNextToken();
+			if (nextToken == INTLITERAL) {
+				return;
+			}
+		}
+	}
+	return error("S() failed");
+}
+
+Answer:
+parse()
+getNextToken()
+S()
+If (nextToken == EOF) print "Success"
+Else print "Unmatched EOF"
+
+S() {
+	If (nextToken == ID)
+		getNextToken()
+		If (nextToken == EQUALS)
+			getNextToken()
+			If (nextToken == INTLITERAL)
+				getNextToken()
+			Return
+	error("S() failed")
+}
+
+------------------------------------------
+Tokens: ID, EQUALS, INTLITERAL, EOF
+Assume the following grammar:
+S → A
+A → id = intliteral
+
+parse() {
+	nextToken = getNextToken();
+	S()
+	if (nextToken == EOF) {
+		print "Success"
+	} else {
+		print "Unmatched EOF"
+	}
+}
+
+S() {
+	A()
+}
+
+A() {
+	if (nextToken == ID) {
+		getNextToken();
+		if (nextToken == EQUALS) {
+			getNextToken();
+			if (nextToken == INTLITERAL) {
+				return;
+			}
+		}
+	}
+	return error("S() failed");
+}
+------------------------------------------
+Assume the following grammar (S is start symbol):
+S → Expr
+Expr → id ExprEnd
+ExprEnd → = id ExprEnd | ε
+
+What are the first, follow, and first+ sets?
+
+First(ExprEnd) = {=, ε}
+First(Expr) = {id}
+First(S) = First(Expr) = {id}
+
+Follow(S) = {eof}
+Follow(Expr) = Follow(S) = {eof}
+Follow(ExprEnd) = Follow(Expr) = {eof}
+
+First+(ExprEnd → = id ExprEnd) = {=}
+First+(ExprEnd → ε) = {eof}
+First+(Expr → id ExprEnd) = {id}
+First+(S → Expr) = {id}
