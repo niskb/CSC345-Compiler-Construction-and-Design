@@ -82,9 +82,9 @@ public class MyScanner {
               return TOKEN.EQUALS;
             } else if (Character.isLetter(c)) {
                 StringBuilder buffer = new StringBuilder().append((char) c);
-                while (Character.isLetter(c)) {
+                while (Character.isLetter(c) || Character.isDigit(c) {
                     c = INPUT.read();
-                    if (Character.isLetter(c)) {
+                    if (Character.isLetter(c) || Character.isDigit(c) {
                         buffer.append((char) c);
                     } else {
                         break;
