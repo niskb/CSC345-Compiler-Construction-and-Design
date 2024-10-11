@@ -11,6 +11,7 @@ class MyScannerTest {
 
     @Test
     void testFirst() {
+        System.out.println("Test One:");
         String program = "declare x int";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -27,6 +28,7 @@ class MyScannerTest {
 
     @Test
     void testSecond() {
+        System.out.println("Test Two:");
         String program = "set x = 5";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -44,6 +46,7 @@ class MyScannerTest {
 
     @Test
     void testThird() {
+        System.out.println("Test Three:");
         String program = "calc x + y";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -61,6 +64,7 @@ class MyScannerTest {
 
     @Test
     void testFourth() {
+        System.out.println("Test Four:");
         String program = "print x";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -76,6 +80,7 @@ class MyScannerTest {
 
     @Test
     void testFifth() {
+        System.out.println("Test Five:");
         String program = "if x = y then \n endif";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -95,6 +100,7 @@ class MyScannerTest {
 
     @Test
     void testSixth() {
+        System.out.println("Test Six:");
         String program = "if x = y then\n print x \n endif";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
@@ -116,6 +122,7 @@ class MyScannerTest {
 
     @Test
     void testSeventh() {
+        System.out.println("Test Seven:");
         String program = "";
         System.out.println(program);
         MyScanner myScanner = new MyScanner(new PushbackReader(new StringReader(program)));
