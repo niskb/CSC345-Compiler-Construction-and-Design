@@ -1,3 +1,7 @@
+/**
+ * Brian Niski
+ */
+
 package niski.csc;
 
 import org.junit.jupiter.api.Test;

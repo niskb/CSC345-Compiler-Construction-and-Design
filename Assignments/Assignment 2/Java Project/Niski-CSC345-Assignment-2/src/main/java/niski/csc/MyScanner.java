@@ -4,6 +4,7 @@
 
 package niski.csc;
 
+import java.io.IOException;
 import java.io.PushbackReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,11 @@ public class MyScanner {
      * INPUT PushbackReader
      */
     private PushbackReader INPUT;
+
+    /**
+     * The last lexeme, so the parse reader can read it when declaring, setting, and reading IDs/Int Literals
+     */
+    private String lastLexeme = "";
 
     /**
      * TOKEN BUFFER StringBuilder
@@ -61,57 +67,97 @@ public class MyScanner {
      * @throws Exception
      */
     public TOKEN scan() throws Exception {
-        int c;
-        c = INPUT.read();
+        int c = readNextChar();
+        String lexeme = "";
         while (c != -1) {
-            if (Character.isWhitespace(c)) {
-                c = INPUT.read();
+            if (isWhiteSpace(c)) {
+                c = readNextChar();
                 continue;
-            } else if (Character.isDigit(c)) {
-                c = INPUT.read();
-                while (Character.isDigit(c)) {
-                    c = INPUT.read();
-                }
-                TOKEN_BUFFER.append(TOKEN.INTLITERAL + "\n");
-                return TOKEN.INTLITERAL;
-            } else if (c == '+') {
-                TOKEN_BUFFER.append(TOKEN.PLUS + "\n");
+            }
+            // The last character that was read is the start of a lexeme
+            lexeme += (char) c;
+            // These lexemes only have one character in them:
+            if (c == '+') {
+                lastLexeme = lexeme;
+                TOKEN_BUFFER.append("+ ");
                 return TOKEN.PLUS;
             } else if (c == '=') {
-              TOKEN_BUFFER.append(TOKEN.EQUALS + "\n");
-              return TOKEN.EQUALS;
-            } else if (Character.isLetter(c)) {
-                StringBuilder buffer = new StringBuilder().append((char) c);
-                while (Character.isLetter(c) || Character.isDigit(c) {
-                    c = INPUT.read();
-                    if (Character.isLetter(c) || Character.isDigit(c) {
-                        buffer.append((char) c);
+                lastLexeme = lexeme;
+                TOKEN_BUFFER.append("= ");
+                return TOKEN.EQUALS;
+            }
+            // If the first character of a lexeme is an integer, the whole lexeme must be an integer
+            else if (lexeme.matches("[0-9]")) {
+                // Loop until it's not an integer
+                while (Character.isDigit(c)) {
+                    c = readNextChar();
+                    if (Character.isDigit(c)) {
+                        lexeme += (char) c;
                     } else {
                         break;
                     }
-                }
-                // Check if buffer matches a reserved word
-                for (TOKEN match : TOKEN.values()) {
-                    if (buffer.toString().equals(String.valueOf(match).toLowerCase())) {
-                        TOKEN_BUFFER.append(match + "\n");
-                        return match;
+                } // end of while
+                lastLexeme = lexeme;
+                TOKEN_BUFFER.append(TOKEN.INTLITERAL + " ");
+                return TOKEN.INTLITERAL;
+            }
+            // If the first character of a lexeme is a letter, then it may be a reserved word
+            // An ID may contain both letters and integers, but the lexeme must start with a letter
+            else if (lexeme.matches("[a-z|A-Z]")) {
+                while (Character.isLetter(c) || Character.isDigit(c)) {
+                    c = readNextChar();
+                    if (Character.isLetter(c) || Character.isDigit(c)) {
+                        lexeme += (char) c;
+                    } else {
+                        break;
                     }
-                }
-                // Check the last token to figure out what token to return for this
-                String lastToken = TOKEN_BUFFER.toString().substring(0, TOKEN_BUFFER.toString().lastIndexOf('\n'));
-                lastToken = lastToken.substring(lastToken.lastIndexOf('\n') + 1, lastToken.length());
-                // The only time we return a DATATYPE token is when the last token was ID
-                if (lastToken.equals(String.valueOf(TOKEN.ID))) {
-                    TOKEN_BUFFER.append(TOKEN.INTDATATYPE + "\n");
+                } // end of while
+                lastLexeme = lexeme;
+                // Check if the lexeme matches a reserved word, otherwise it's an ID
+                // "int" is a reserved word, but the token value is INTDATATYPE, so we must include an if statement
+                if (lexeme.equals("int")) {
+                    TOKEN_BUFFER.append(TOKEN.INTDATATYPE + " ");
                     return TOKEN.INTDATATYPE;
                 } else {
-                    TOKEN_BUFFER.append(TOKEN.ID + "\n");
+                    // Use a loop to match the lexeme with the token
+                    for (TOKEN match : TOKEN.values()) {
+                        if (String.valueOf(match).toLowerCase().equals(lexeme.toLowerCase())) {
+                            TOKEN_BUFFER.append(match + " ");
+                            return match;
+                        }
+                    }
+                    // No matches, must be an ID
+                    TOKEN_BUFFER.append(TOKEN.ID + " ");
                     return TOKEN.ID;
                 }
             }
-        }
+        } // end of while
         TOKEN_BUFFER.append(TOKEN.SCANEOF);
         return TOKEN.SCANEOF;
+    }
+
+    /**
+     * Reads the next character in the PushbackReader and returns it as an int
+     * @return
+     */
+    private int readNextChar() {
+        try {
+            return INPUT.read();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * If the character read is a whitespace return true, otherwise return false
+     * @param c
+     * @return
+     */
+    private boolean isWhiteSpace(int c) {
+        if ((c == 32) || (c == 9) || (c == 10) || (c == 13)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -121,6 +167,13 @@ public class MyScanner {
      */
     public String getTokenBufferString() {
         return TOKEN_BUFFER.toString();
+    }
+
+    /**
+     * Method to get the last lexeme
+     */
+    public String getLastLexeme() {
+        return lastLexeme;
     }
 
 }
