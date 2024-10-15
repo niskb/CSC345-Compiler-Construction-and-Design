@@ -94,6 +94,9 @@ public class MyScanner {
                     if (Character.isDigit(c)) {
                         lexeme += (char) c;
                     } else {
+                        if ((!isWhiteSpace(c)) && (c != -1)) {
+                            INPUT.unread(c);
+                        }
                         break;
                     }
                 } // end of while
@@ -109,6 +112,9 @@ public class MyScanner {
                     if (Character.isLetter(c) || Character.isDigit(c)) {
                         lexeme += (char) c;
                     } else {
+                        if ((!isWhiteSpace(c)) && (c != -1)) {
+                            INPUT.unread(c);
+                        }
                         break;
                     }
                 } // end of while
@@ -132,6 +138,7 @@ public class MyScanner {
                 }
             }
         } // end of while
+        lastLexeme = "$";
         TOKEN_BUFFER.append(TOKEN.SCANEOF);
         return TOKEN.SCANEOF;
     }

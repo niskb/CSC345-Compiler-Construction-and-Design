@@ -12,8 +12,8 @@ public class Main {
 
     /**
      * Main method to run your own program
-     * You may load your own program by updating and putting it in the input.txt file!
-     * My MyScanner Class has been rewritten for it to work with this homework assignment
+     * You may load your own program by entering it in the input.txt file!
+     * My MyScanner Class has been rewritten for it to work with this and future homework assignments
      * @param args
      */
     public static void main(String[] args) {

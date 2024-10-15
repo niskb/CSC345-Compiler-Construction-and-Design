@@ -2,14 +2,21 @@ declare w int
 declare x int
 declare y int
 declare z int
-set w = 5
-set x = 10
-set y = 15
-set z = 20
-calc w = x + y + z
-if x = y then
-print w
-print x
+set x=10
+set y=15
+set z=20
+calc w=x+y+z
+if x=y then
+    calc w=x+y+z
+    print w
 endif
-print y
-print z
+set w= 45
+set z =45
+if w=z then
+    print y
+    if z=w then
+       if w=w then
+            print z
+        endif
+    endif
+endif

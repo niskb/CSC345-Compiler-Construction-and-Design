@@ -33,7 +33,7 @@ public class MyParser {
     }
 
     /**
-     * This is the lookup table
+     * This is the lookup table for variable information
      */
     private Map<String, SymbolTableItem> symbolTable = new HashMap<String, SymbolTableItem>();
 
@@ -57,6 +57,9 @@ public class MyParser {
      */
     private boolean match(MyScanner.TOKEN expectedToken) {
         if (nextToken == expectedToken) {
+            System.out.println("Lexeme Scanned: " + scanner.getLastLexeme());
+            System.out.println("Token, \"" + nextToken + "\" matches with expected token, \"" + expectedToken + "\"");
+            System.out.println("Token Buffer:\n" + scanner.getTokenBufferString());
             getNextToken();
             return true;
         }
@@ -74,21 +77,21 @@ public class MyParser {
      * @return
      */
     public boolean parse(String program) {
-        // Parse program
+        // Initialize scanner and get the next token
         scanner = new MyScanner(new PushbackReader(new StringReader(program)));
         nextToken = getNextToken();
 
+        // Parse program
         if (nextToken != MyScanner.TOKEN.SCANEOF) {
             program();
         }
         if (match(MyScanner.TOKEN.SCANEOF)) {
-            System.out.println("Parsing successful.");
+            System.out.println("\nParsing successful.");
             return true;
         } else {
-            System.out.println("Parsing failed!");
+            System.out.println("\nParsing failed!");
             return false;
         }
-
     }
 
     /**
@@ -120,9 +123,11 @@ public class MyParser {
      * <Decls>
      */
     private void decls() {
-        decl();
-        if (nextToken == MyScanner.TOKEN.DECLARE) {
-            decls();
+        if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Decls>
+            decl();
+            if (nextToken == MyScanner.TOKEN.DECLARE) {
+                decls();
+            }
         }
     }
 
@@ -152,7 +157,7 @@ public class MyParser {
      * @param statementTrue
      */
     private void stmts(boolean statementTrue) {
-        if (nextToken != MyScanner.TOKEN.SCANEOF) {
+        if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Stmts>
             stmt(statementTrue);
             if ((nextToken == MyScanner.TOKEN.PRINT) || (nextToken == MyScanner.TOKEN.SET) || (nextToken == MyScanner.TOKEN.IF) || (nextToken == MyScanner.TOKEN.CALC)) {
                 stmts(statementTrue);
@@ -311,14 +316,17 @@ public class MyParser {
      * @return
      */
     private int sumEnd(int calc) {
-        if (nextToken == MyScanner.TOKEN.PLUS) {
-            if (!match(MyScanner.TOKEN.PLUS)) {
-                System.exit(MATCH_ERROR);
+        if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <SumEnd>
+            if (nextToken == MyScanner.TOKEN.PLUS) {
+                if (!match(MyScanner.TOKEN.PLUS)) {
+                    System.exit(MATCH_ERROR);
+                }
+                // Parse <Value>
+                calc += value();
+                // Parse <SumEnd>
+                calc = sumEnd(calc);
             }
-            // Parse <Value>
-            calc += value();
-            // Parse <SumEnd>
-            calc = sumEnd(calc);
+            return calc;
         }
         return calc;
     }
@@ -415,10 +423,10 @@ public class MyParser {
                 System.exit(UNDEFINED_ERROR);
             } else {
                 if (ifID1.name.equals(ifID2.name)) {
-                    System.out.println("If Statement: " + id1 + " == " + id2 + " is true.");
+                    System.out.println("If Statement: " + id1 + " = " + id2 + " is true.");
                     return true;
                 } else {
-                    System.out.println("If Statement: " + id1 + " == " + id2 + " is false.");
+                    System.out.println("If Statement: " + id1 + " = " + id2 + " is false.");
                 }
             }
         }
@@ -469,70 +477,62 @@ public class MyParser {
     /**
      * Parsing Error Messages
      */
-
     /**
      * Match Error
+     *
      * @param expectedToken
      */
     private void generateMatchErrorMessage(MyScanner.TOKEN expectedToken) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + nextToken);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
-        System.out.println("END OF BUFFER");
+        System.out.println("\nParse Error");
+        System.out.println("Received: " + nextToken + "\tBuffer " + scanner.getLastLexeme());
         System.out.println("Expected: " + expectedToken);
     }
 
     /**
      * Declaration Error
+     *
      * @param id
      */
     private void generateDeclarationErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("\nParse Error");
+        System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
         System.out.println("Error Message: " + id + " is already declared!");
     }
 
     /**
      * Undeclared ID Error
+     *
      * @param id
      */
     private void generateUndeclaredErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("\nParse Error");
+        System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
         System.out.println("Error Message: " + id + " is undeclared!");
     }
 
     /**
      * Undefined ID Error
+     *
      * @param id
      */
     private void generateUndefinedErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("\nParse Error");
+        System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
         System.out.println("Error Message: " + id + " is undefined!");
     }
 
     /**
      * Parsing Warning Messages
      */
-
     /**
      * Undefined ID in Calculation
+     *
      * @param id
      */
     private void generateCalcWarningMessage(String id) {
-        System.out.println("Parse Warning: ");
-        System.out.println("Received: " + id);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
-        System.out.println("Warning Message: " + id + " being used in calc function is undefined!");
+        System.out.println("\nParse Warning");
+        System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
+        System.out.println("Warning Message: " + id + " being used in calc function is undefined!\n");
     }
 
 }
