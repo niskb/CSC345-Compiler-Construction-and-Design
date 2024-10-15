@@ -12,13 +12,12 @@ import java.util.Map;
 public class MyParser {
 
     /**
-     * Parsing error codes
+     * Parsing Error Codes
      */
     private static final int MATCH_ERROR = -1;
     private static final int DECLARATION_ERROR = -2;
     private static final int UNDECLARED_ERROR = -3;
     private static final int UNDEFINED_ERROR = -4;
-    private static final int IF_STATEMENT_NEVER_CLOSED_ERROR = -5;
 
     /**
      * Type
@@ -89,10 +88,12 @@ public class MyParser {
             System.out.println("Parsing failed!");
             return false;
         }
+
     }
 
     /**
      * Returns the next token from the scanner
+     *
      * @return
      */
     private MyScanner.TOKEN getNextToken() {
@@ -104,45 +105,20 @@ public class MyParser {
         }
     }
 
-    private void generateMatchErrorMessage(MyScanner.TOKEN expectedToken) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + nextToken);
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
-        System.out.println("END OF BUFFER");
-        System.out.println("Expected: " + expectedToken);
-    }
-
-    private void generateDeclarationErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        System.out.println("Error Message: " + id + " is already declared!");
-    }
-
-    private void generateUndeclaredErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        System.out.println("Error Message: " + id + " is undeclared!");
-    }
-
-    private void generateUndefinedErrorMessage(String id) {
-        System.out.println("Parse Error:");
-        System.out.println("Received: " + id);
-        System.out.println("Error Message: " + id + " is undefined!");
-    }
-
-    private void generateIfStatementNeverClosedError() {
-        System.out.println("Parse Error: ");
-        String buffer = scanner.getTokenBufferString();
-        System.out.println("Token Buffer:\n" + buffer);
-        System.out.println("Error Message: If Statement is never closed!");
-    }
-
+    /**
+     * Recursive Descent Parsing Methods
+     */
+    /**
+     * <Program>
+     */
     private void program() {
         decls();
-        stmts();
+        stmts(true);
     }
 
+    /**
+     * <Decls>
+     */
     private void decls() {
         decl();
         if (nextToken == MyScanner.TOKEN.DECLARE) {
@@ -150,6 +126,9 @@ public class MyParser {
         }
     }
 
+    /**
+     * <Decl>
+     */
     private void decl() {
         if (!match(MyScanner.TOKEN.DECLARE)) {
             System.exit(MATCH_ERROR);
@@ -164,6 +143,197 @@ public class MyParser {
         declareID(id);
     }
 
+
+    /**
+     * <Stmts>
+     * This method has a parameter for when the if statement is either true or false
+     * This parameter is important because we do not want to execute the statements inside the if statement when it is false
+     *
+     * @param statementTrue
+     */
+    private void stmts(boolean statementTrue) {
+        if (nextToken != MyScanner.TOKEN.SCANEOF) {
+            stmt(statementTrue);
+            if ((nextToken == MyScanner.TOKEN.PRINT) || (nextToken == MyScanner.TOKEN.SET) || (nextToken == MyScanner.TOKEN.IF) || (nextToken == MyScanner.TOKEN.CALC)) {
+                stmts(statementTrue);
+            }
+        }
+    }
+
+    /**
+     * <Stmt>
+     * If the statementTrue parameter is true, the block is able to execute the statements, otherwise just parse the statement
+     *
+     * @param statementTrue
+     */
+    private void stmt(boolean statementTrue) {
+        // Parse Print <Stmt>
+        if ((nextToken == MyScanner.TOKEN.PRINT)) {
+            if (!match(MyScanner.TOKEN.PRINT)) {
+                System.exit(MATCH_ERROR);
+            }
+            String id = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (statementTrue) {
+                printStatement(id);
+            }
+        }
+        // Parse Set <Stmt>
+        else if (nextToken == MyScanner.TOKEN.SET) {
+            if (!match(MyScanner.TOKEN.SET)) {
+                System.exit(MATCH_ERROR);
+            }
+            String id = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (!match(MyScanner.TOKEN.EQUALS)) {
+                System.exit(MATCH_ERROR);
+            }
+            String intLiteral = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.INTLITERAL)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (statementTrue) {
+                setID(id, intLiteral);
+            }
+        }
+        // Parse If <Stmt>
+        else if (nextToken == MyScanner.TOKEN.IF) {
+            if (!match(MyScanner.TOKEN.IF)) {
+                System.exit(MATCH_ERROR);
+            }
+            String id1 = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (!match(MyScanner.TOKEN.EQUALS)) {
+                System.exit(MATCH_ERROR);
+            }
+            String id2 = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (!match(MyScanner.TOKEN.THEN)) {
+                System.exit(MATCH_ERROR);
+            }
+            // Inner Statements
+            // Determines whether to execute the statements in the if statement block at the parser level
+            if (ifStatement(id1, id2) && statementTrue) { // If the statement is true and if the previous statement was true
+                // Parse <Stmts>
+                stmts(true);
+            } else { // The if statement is false
+                // We still have to parse the inside block of the if statement
+                // Parse <Stmts>
+                stmts(false);
+            }
+            // End of If
+            if (!match(MyScanner.TOKEN.ENDIF)) {
+                System.exit(MATCH_ERROR);
+            }
+        }
+        // Parse Calc <Stmt>
+        else if (nextToken == MyScanner.TOKEN.CALC) {
+            if (!match(MyScanner.TOKEN.CALC)) {
+                System.exit(MATCH_ERROR);
+            }
+            String id = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            if (!match(MyScanner.TOKEN.EQUALS)) {
+                System.exit(MATCH_ERROR);
+            }
+            // Calculate the sum at the parser level; these recursive descent parser methods have an "int" return value
+            // We can calculate the sum recursively
+            if (statementTrue) {
+                calcID(id);
+                // Parse <Sum>, then update ID
+                int calc = sum();
+                // Update ID
+                symbolTable.get(id).name = String.valueOf(calc);
+                System.out.println(id + " has been updated to " + symbolTable.get(id).name + ".");
+            } else { // Just run <Sum> and do not update the ID because the if statement/block was false
+                calcID(id);
+                sum();
+                System.out.println("No ID has been updated because the if statement was false!");
+            }
+        }
+    }
+
+    /**
+     * <Sum>
+     * Returns the sum calculation recursively
+     *
+     * @return
+     */
+    private int sum() {
+        // Parse <Value>
+        int calc = value();
+        // Parse <SumEnd>
+        calc = sumEnd(calc);
+        return calc;
+    }
+
+    /**
+     * <Value>
+     * Returns a parsing error if there is a Match error between ID or INTLITERAL
+     * Returns the value of the ID or INTLITERAL
+     *
+     * @return
+     */
+    private int value() {
+        if (nextToken == MyScanner.TOKEN.ID) {
+            String id = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.ID)) {
+                System.exit(MATCH_ERROR);
+            }
+            valueID(id);
+            return Integer.parseInt(symbolTable.get(id).name);
+        } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
+            String intLiteral = scanner.getLastLexeme();
+            if (!match(MyScanner.TOKEN.INTLITERAL)) {
+                System.exit(MATCH_ERROR);
+            }
+            return Integer.parseInt(intLiteral);
+        }
+        return 0;
+    }
+
+    /**
+     * <SumEnd>
+     * Continues to parse the program recursively
+     * Returns the sum calculation
+     *
+     * @param calc
+     * @return
+     */
+    private int sumEnd(int calc) {
+        if (nextToken == MyScanner.TOKEN.PLUS) {
+            if (!match(MyScanner.TOKEN.PLUS)) {
+                System.exit(MATCH_ERROR);
+            }
+            // Parse <Value>
+            calc += value();
+            // Parse <SumEnd>
+            calc = sumEnd(calc);
+        }
+        return calc;
+    }
+
+    /**
+     * Helper Methods
+     */
+
+    /**
+     * Executes when "declare id" is parsed
+     * Declares a new ID
+     * Returns a parsing error if the ID is already inside the symbol table
+     *
+     * @param id
+     */
     private void declareID(String id) {
         if (!symbolTable.containsKey(id)) {
             SymbolTableItem newItem = new SymbolTableItem();
@@ -177,15 +347,13 @@ public class MyParser {
         }
     }
 
-    private void stmts() {
-        if (nextToken != MyScanner.TOKEN.SCANEOF) {
-            stmt();
-            if ((nextToken == MyScanner.TOKEN.PRINT) || (nextToken == MyScanner.TOKEN.SET) || (nextToken == MyScanner.TOKEN.IF) || (nextToken == MyScanner.TOKEN.CALC)) {
-                stmts();
-            }
-        }
-    }
-
+    /**
+     * Executes when "print id" is parsed
+     * Prints the ID
+     * Returns a parsing error if the ID is not inside the symbol table or the ID is undefined
+     *
+     * @param id
+     */
     private void printStatement(String id) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
@@ -201,6 +369,14 @@ public class MyParser {
         }
     }
 
+    /**
+     * Executes when "set id = intliteral" is parsed
+     * Defines an ID
+     * Returns a parsing error if the ID is not in the symbol table
+     *
+     * @param id
+     * @param intLiteral
+     */
     private void setID(String id, String intLiteral) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
@@ -212,6 +388,15 @@ public class MyParser {
         }
     }
 
+    /**
+     * Executes when the parsed if statement to check if it's either true or false
+     * We still have to parse the inner statements when it returns false
+     * Returns a parsing error if the IDs are not in the symbol table or one or both are undefined
+     *
+     * @param id1
+     * @param id2
+     * @return
+     */
     private boolean ifStatement(String id1, String id2) {
         if (!symbolTable.containsKey(id1)) {
             generateUndeclaredErrorMessage(id1);
@@ -240,6 +425,13 @@ public class MyParser {
         return false;
     }
 
+    /**
+     * Executes when "calc id = <Sum>" is parsed
+     * Returns a parsing error if the ID is undeclared
+     * If this ID is undefined, that ID must not be used in <Sum>
+     *
+     * @param id
+     */
     private void calcID(String id) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
@@ -247,14 +439,18 @@ public class MyParser {
         } else {
             SymbolTableItem calcSTI = symbolTable.get(id);
             if (calcSTI.name.isEmpty()) {
-                generateUndefinedErrorMessage(id);
-                System.exit(UNDEFINED_ERROR);
-            } else {
-                System.out.println("Calc: " + id + "\tCurrent Value: " + calcSTI.name);
+                generateCalcWarningMessage(id);
             }
+            System.out.println("Calc: " + id + "\tCurrent Value: " + calcSTI.name);
         }
     }
 
+    /**
+     * Executes when "<Value>" is parsed
+     * Returns a parsing error if the ID is undeclared or undefined
+     *
+     * @param id
+     */
     private void valueID(String id) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
@@ -270,130 +466,73 @@ public class MyParser {
         }
     }
 
-    private void stmt() {
-        // Print
-        if ((nextToken == MyScanner.TOKEN.PRINT)) {
-            if (!match(MyScanner.TOKEN.PRINT)) {
-                System.exit(MATCH_ERROR);
-            }
-            String id = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            printStatement(id);
-        }
-        // Set
-        else if (nextToken == MyScanner.TOKEN.SET) {
-            if (!match(MyScanner.TOKEN.SET)) {
-                System.exit(MATCH_ERROR);
-            }
-            String id = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            if (!match(MyScanner.TOKEN.EQUALS)) {
-                System.exit(MATCH_ERROR);
-            }
-            String intLiteral = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.INTLITERAL)) {
-                System.exit(MATCH_ERROR);
-            }
-            setID(id, intLiteral);
-        }
-        // If
-        else if (nextToken == MyScanner.TOKEN.IF) {
-            if (!match(MyScanner.TOKEN.IF)) {
-                System.exit(MATCH_ERROR);
-            }
-            String id1 = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            if (!match(MyScanner.TOKEN.EQUALS)) {
-                System.exit(MATCH_ERROR);
-            }
-            String id2 = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            if (!match(MyScanner.TOKEN.THEN)) {
-                System.exit(MATCH_ERROR);
-            }
-            boolean ifStatementValue = ifStatement(id1, id2);
-            // Inner Statements - Ignore stmts() if the values are false.
-            if (ifStatementValue) {
-                stmts();
-            } else {
-                while (nextToken != MyScanner.TOKEN.ENDIF) {
-                    try {
-                        if (nextToken == MyScanner.TOKEN.SCANEOF) {
-                            generateIfStatementNeverClosedError();
-                            System.exit(IF_STATEMENT_NEVER_CLOSED_ERROR);
-                        }
-                        nextToken = scanner.scan();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            // End of If
-            if (!match(MyScanner.TOKEN.ENDIF)) {
-                System.exit(MATCH_ERROR);
-            }
-        }
-        // Calc
-        else if (nextToken == MyScanner.TOKEN.CALC) {
-            if (!match(MyScanner.TOKEN.CALC)) {
-                System.exit(MATCH_ERROR);
-            }
-            String id = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            if (!match(MyScanner.TOKEN.EQUALS)) {
-                System.exit(MATCH_ERROR);
-            }
-            calcID(id);
-            int calc = sum();
-            symbolTable.get(id).name = String.valueOf(calc);
-            System.out.println(id + " has been updated to " + symbolTable.get(id).name + ".");
-        }
+    /**
+     * Parsing Error Messages
+     */
+
+    /**
+     * Match Error
+     * @param expectedToken
+     */
+    private void generateMatchErrorMessage(MyScanner.TOKEN expectedToken) {
+        System.out.println("Parse Error:");
+        System.out.println("Received: " + nextToken);
+        String buffer = scanner.getTokenBufferString();
+        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("END OF BUFFER");
+        System.out.println("Expected: " + expectedToken);
     }
 
-    private int sum() {
-        // ADDING NUMBERS RECURSIVELY?! Yes.
-        int calc = value();
-        calc = sumEnd(calc);
-        return calc;
+    /**
+     * Declaration Error
+     * @param id
+     */
+    private void generateDeclarationErrorMessage(String id) {
+        System.out.println("Parse Error:");
+        System.out.println("Received: " + id);
+        String buffer = scanner.getTokenBufferString();
+        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("Error Message: " + id + " is already declared!");
     }
 
-    private int value() {
-        if (nextToken == MyScanner.TOKEN.ID) {
-            String id = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.ID)) {
-                System.exit(MATCH_ERROR);
-            }
-            valueID(id);
-            return Integer.parseInt(symbolTable.get(id).name);
-        } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
-            String intLiteral = scanner.getLastLexeme();
-            if (!match(MyScanner.TOKEN.INTLITERAL)) {
-                System.exit(MATCH_ERROR);
-            }
-            return Integer.parseInt(intLiteral);
-        }
-        return 0;
+    /**
+     * Undeclared ID Error
+     * @param id
+     */
+    private void generateUndeclaredErrorMessage(String id) {
+        System.out.println("Parse Error:");
+        System.out.println("Received: " + id);
+        String buffer = scanner.getTokenBufferString();
+        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("Error Message: " + id + " is undeclared!");
     }
 
-    private int sumEnd(int calc) {
-        if (nextToken == MyScanner.TOKEN.PLUS) {
-            if (!match(MyScanner.TOKEN.PLUS)) {
-                System.exit(MATCH_ERROR);
-            }
-            calc += value();
-            calc = sumEnd(calc);
-        }
-        return calc;
+    /**
+     * Undefined ID Error
+     * @param id
+     */
+    private void generateUndefinedErrorMessage(String id) {
+        System.out.println("Parse Error:");
+        System.out.println("Received: " + id);
+        String buffer = scanner.getTokenBufferString();
+        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("Error Message: " + id + " is undefined!");
+    }
+
+    /**
+     * Parsing Warning Messages
+     */
+
+    /**
+     * Undefined ID in Calculation
+     * @param id
+     */
+    private void generateCalcWarningMessage(String id) {
+        System.out.println("Parse Warning: ");
+        System.out.println("Received: " + id);
+        String buffer = scanner.getTokenBufferString();
+        System.out.println("Token Buffer:\n" + buffer);
+        System.out.println("Warning Message: " + id + " being used in calc function is undefined!");
     }
 
 }

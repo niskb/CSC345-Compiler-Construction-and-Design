@@ -67,13 +67,21 @@ class MyParserTest {
 
     // Set test for a declared variable
     @Test
-    void setTest() {
+    void setTestOne() {
         String program = "declare x int\n" +
                 "set x = 10";
         assertEquals(true, new MyParser().parse(program));
     }
 
-    // Test parsing an If statement if when an if statement is either true or false
+    // Set test for an undeclared variable
+    @Test
+    void setTestTwo() {
+        String program = "declare x int\n" +
+                "set y = 10";
+        assertEquals(false, new MyParser().parse(program));
+    }
+
+    // If test parsing an If statement if when an if statement is either true or false
     @Test
     void ifTestOne() {
         String program = "declare x int\n" +
@@ -81,6 +89,10 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "if x = y then\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
                 " print x\n" +
                 "set y = 10\n" +
                 " endif\n" +
@@ -92,7 +104,7 @@ class MyParserTest {
         assertEquals(true, new MyParser().parse(program));
     }
 
-    // Test if an If Statement is never closed!
+    // If test if an If Statement is never closed! (Match error)
     @Test
     void ifTestTwo() {
         String program = "declare x int\n" +
@@ -101,16 +113,69 @@ class MyParserTest {
                 "set y = 15\n" +
                 "if x = y then\n" +
                 " print x\n" +
-                "set y = 10\n" +
-                "set x = 15\n" +
-                "if x = y then\n" +
-                " print x\n" +
                 " print y";
         assertEquals(false, new MyParser().parse(program));
     }
 
+    // If test parsing NESTED If statements
     @Test
-    void calcTest() {
+    void ifTestThree() {
+        String program = "declare x int\n" +
+                "declare y int\n" +
+                "set x = 10\n" +
+                "set y = 15\n" +
+                "if x = y then\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                "set y = 10\n" +
+                "if x = y then\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
+                " calc y = x + y" +
+                " print y\n" +
+                " endif\n" +
+                " endif\n" + // notice that we put an if statement inside an if statement
+                "set x = 20\n" +
+                "set y = 20\n" +
+                "if x = y then\n" +
+                " print x\n" +
+                " print y\n" +
+                " endif";
+        assertEquals(true, new MyParser().parse(program));
+    }
+
+    // If test multi nested if statement
+    @Test
+    void ifTestFour() {
+        String program = "declare x int\n" +
+                "declare y int\n" +
+                "declare z int\n" +
+                "set x = 1\n" +
+                "set y = 1\n" +
+                "set z = 1\n" +
+                "if x = y then\n" +
+                "if y = z then\n" +
+                "if z = x then\n" +
+                "if y = y then\n" +
+                " print x" +
+                " print y" +
+                " print z" +
+                " endif\n" +
+                " endif\n" +
+                " endif\n" +
+                " endif\n";
+        assertEquals(true, new MyParser().parse(program));
+    }
+
+    // Calc test <Sum> Recursion
+    @Test
+    void calcTestOne() {
         String program = "declare w int\n" +
                 "declare x int\n" +
                 "declare y int\n" +
@@ -126,6 +191,36 @@ class MyParserTest {
                 " print x\n" +
                 " print z";
         assertEquals(true, new MyParser().parse(program));
+    }
+
+    // Calc test undefined ID variable
+    @Test
+    void calcTestTwo() {
+        String program = "declare w int\n" +
+                "declare x int\n" +
+                "declare y int\n" +
+                "declare z int\n" +
+                "set w = 5\n" +
+                "set x = 10\n" +
+                "set y = 15\n" +
+                "calc z = x + y + w + x\n" +
+                " print z";
+        assertEquals(true, new MyParser().parse(program));
+    }
+
+    // Calc test undefined ID variable and this ID is being used in the calculation
+    @Test
+    void calcTestThree() {
+        String program = "declare w int\n" +
+                "declare x int\n" +
+                "declare y int\n" +
+                "declare z int\n" +
+                "set w = 5\n" +
+                "set x = 10\n" +
+                "set y = 15\n" +
+                "calc z = x + y + w + x + z\n" +
+                " print z";
+        assertEquals(false, new MyParser().parse(program));
     }
 
     @Test
@@ -145,7 +240,7 @@ class MyParserTest {
                 "endif\n" +
                 "print y\n" +
                 "print z";
-        // Should return no syntax error
+        // Should return NO syntax error
         assertEquals(true, new MyParser().parse(program));
     }
 
@@ -158,7 +253,7 @@ class MyParserTest {
                 "if w x then\n" +
                 " print w\n" +
                 "endif";
-        // Should return a syntax error
+        // Should return A syntax error
         assertEquals(false, new MyParser().parse(program));
     }
 

@@ -10,6 +10,12 @@ import java.nio.file.Path;
 
 public class Main {
 
+    /**
+     * Main method to run your own program
+     * You may load your own program by updating and putting it in the input.txt file!
+     * My MyScanner Class has been rewritten for it to work with this homework assignment
+     * @param args
+     */
     public static void main(String[] args) {
         String program = "";
         try {
@@ -20,4 +26,5 @@ public class Main {
         boolean parse = new MyParser().parse(program);
         System.out.println("Result: " + parse);
     }
+
 }

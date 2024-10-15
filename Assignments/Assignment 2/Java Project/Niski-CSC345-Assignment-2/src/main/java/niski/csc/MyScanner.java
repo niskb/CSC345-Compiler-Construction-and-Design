@@ -170,7 +170,7 @@ public class MyScanner {
     }
 
     /**
-     * Method to get the last lexeme
+     * Helper Method to get the last lexeme for the parser symbol table
      */
     public String getLastLexeme() {
         return lastLexeme;
