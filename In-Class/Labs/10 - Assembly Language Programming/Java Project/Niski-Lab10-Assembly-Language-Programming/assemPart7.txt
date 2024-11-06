@@ -1,0 +1,10 @@
+.data
+.code
+loadintliteral ri1, 0
+loadintliteral ri2, 1
+loadintliteral ri3, 6
+:loop
+add ri1, ri2, ri1
+inc ri2
+blt ri2, ri3, loop
+printi ri1

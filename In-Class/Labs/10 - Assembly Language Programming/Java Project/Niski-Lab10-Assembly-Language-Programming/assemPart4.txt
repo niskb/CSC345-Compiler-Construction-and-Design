@@ -1,0 +1,12 @@
+.data
+var int a
+var int b
+var int c
+.code
+loadintliteral ri1, 10
+storeintvar ri1, a
+loadintliteral ri2, 20
+storeintvar ri2, b
+printi a
+printi b
+printi c

@@ -1,0 +1,4 @@
+.data
+.code
+loadintliteral ri1, 88
+printi ri1

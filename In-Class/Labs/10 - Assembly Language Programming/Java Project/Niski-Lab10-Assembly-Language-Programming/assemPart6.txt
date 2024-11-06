@@ -1,0 +1,8 @@
+.data
+.code
+loadintliteral ri1, 1
+loadintliteral ri2, 11
+:loop
+printi ri1
+inc ri1
+blt ri1, ri2, loop

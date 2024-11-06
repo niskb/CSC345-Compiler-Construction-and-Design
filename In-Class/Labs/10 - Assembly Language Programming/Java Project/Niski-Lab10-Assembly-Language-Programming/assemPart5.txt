@@ -1,0 +1,14 @@
+.data
+.code
+loadintliteral ri1, 20
+loadintliteral ri2, 20
+loadstringliteral rs1, "Values are equal"
+loadstringliteral rs2, "Values are not equal"
+be ri1, ri2, equal
+prints rs2
+branch end
+:equal
+prints rs1
+:end
+loadstringliteral rs3, "Program done"
+prints rs3

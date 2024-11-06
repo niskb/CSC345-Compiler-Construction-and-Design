@@ -1,0 +1,11 @@
+.data
+.code
+loadintliteral ri1, 77
+loadintliteral ri2, 11
+add ri1, ri2, ri3
+inc ri1
+inc ri2
+inc ri3
+printi ri1
+printi ri2
+printi ri3
