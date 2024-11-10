@@ -116,7 +116,7 @@ public class MyParser {
      */
     private void program() {
         decls();
-        stmts();
+        stmts(true);
     }
 
     /**
@@ -150,12 +150,14 @@ public class MyParser {
      * <Stmts>
      * This method has a parameter for when the if statement is either true or false
      * This parameter is important because we do not want to execute the statements inside the if statement when it is false
+     *
+     * @param statementTrue
      */
-    private void stmts() {
+    private void stmts(boolean statementTrue) {
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Stmts>
-            stmt();
+            stmt(statementTrue);
             if ((nextToken == MyScanner.TOKEN.PRINT) || (nextToken == MyScanner.TOKEN.SET) || (nextToken == MyScanner.TOKEN.IF) || (nextToken == MyScanner.TOKEN.CALC)) {
-                stmts();
+                stmts(statementTrue);
             }
         }
     }
@@ -166,7 +168,7 @@ public class MyParser {
      *
      * @param statementTrue
      */
-    private void stmt() {
+    private void stmt(boolean statementTrue) {
         // Parse Print <Stmt>
         if ((nextToken == MyScanner.TOKEN.PRINT)) {
             if (!match(MyScanner.TOKEN.PRINT)) {
@@ -175,6 +177,9 @@ public class MyParser {
             String id = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.ID)) {
                 System.exit(MATCH_ERROR);
+            }
+            if (statementTrue) {
+                printStatement(id);
             }
         }
         // Parse Set <Stmt>
@@ -192,6 +197,9 @@ public class MyParser {
             String intLiteral = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
+            }
+            if (statementTrue) {
+                setID(id, intLiteral);
             }
         }
         // Parse If <Stmt>
@@ -214,7 +222,15 @@ public class MyParser {
                 System.exit(MATCH_ERROR);
             }
             // Inner Statements
-            stmts();
+            // Determines whether to execute the statements in the if statement block at the parser level
+            if (ifStatement(id1, id2) && statementTrue) { // If the statement is true and if the previous statement was true
+                // Parse <Stmts>
+                stmts(true);
+            } else { // The if statement is false
+                // We still have to parse the inside block of the if statement
+                // Parse <Stmts>
+                stmts(false);
+            }
             // End of If
             if (!match(MyScanner.TOKEN.ENDIF)) {
                 System.exit(MATCH_ERROR);
@@ -232,8 +248,20 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.EQUALS)) {
                 System.exit(MATCH_ERROR);
             }
-            calcID(id);
-            sum();
+            // Calculate the sum at the parser level; these recursive descent parser methods have an "int" return value
+            // We can calculate the sum recursively
+            if (statementTrue) {
+                calcID(id);
+                // Parse <Sum>, then update ID
+                int calc = sum();
+                // Update ID - Do not update the value! "There is no need to do actual calculations during parsing at this point"
+                /*symbolTable.get(id).name = String.valueOf(calc);*/
+                System.out.println(id + " has been calculated as " + symbolTable.get(id).name + ".\nSymbol Table has not been updated!\nCalc parse successful.");
+            } else { // Just run <Sum> and do not update the ID because the if statement/block was false
+                calcID(id);
+                sum();
+                /*System.out.println("No ID has been updated because the if statement was false!");*/
+            }
         }
     }
 
@@ -243,46 +271,61 @@ public class MyParser {
      *
      * @return
      */
-    private void sum() {
-        value();
-        sumEnd();
+    private int sum() {
+        // Parse <Value>
+        int calc = value();
+        // Parse <SumEnd>
+        calc = sumEnd(calc);
+        return calc;
     }
 
     /**
      * <Value>
      * Returns a parsing error if there is a Match error between ID or INTLITERAL
      * Returns the value of the ID or INTLITERAL
+     *
+     * @return
      */
-    private void value() {
+    private int value() {
         if (nextToken == MyScanner.TOKEN.ID) {
             String id = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.ID)) {
                 System.exit(MATCH_ERROR);
             }
             valueID(id);
+            return Integer.parseInt(symbolTable.get(id).name);
         } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
             String intLiteral = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
             }
+            return Integer.parseInt(intLiteral);
         }
+        return 0;
     }
 
     /**
      * <SumEnd>
      * Continues to parse the program recursively
      * Returns the sum calculation
+     *
+     * @param calc
+     * @return
      */
-    private void sumEnd() {
+    private int sumEnd(int calc) {
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <SumEnd>
             if (nextToken == MyScanner.TOKEN.PLUS) {
                 if (!match(MyScanner.TOKEN.PLUS)) {
                     System.exit(MATCH_ERROR);
                 }
-                value();
-                sumEnd();
+                // Parse <Value>
+                calc += value();
+                // Parse <SumEnd>
+                calc = sumEnd(calc);
             }
+            return calc;
         }
+        return calc;
     }
 
     /**

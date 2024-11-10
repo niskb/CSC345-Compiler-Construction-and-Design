@@ -40,28 +40,28 @@ class MyParserTest {
         assertEquals(false, new MyParser().parse(program));
     }
 
-    // Pr test for an undeclared variable
+    // Print test for an undeclared variable
     @Test
-    void prTestOne() {
+    void printTestOne() {
         String program = "declare x \n" +
-                "pr y";
+                "print y";
         assertEquals(false, new MyParser().parse(program));
     }
 
-    // Pr test for an undefined variable
+    // Print test for an undefined variable
     @Test
-    void prTestTwo() {
+    void printTestTwo() {
         String program = "declare x \n" +
-                "pr x";
+                "print x";
         assertEquals(false, new MyParser().parse(program));
     }
 
-    // Pr test for a declared and set variable
+    // Print test for a declared and set variable
     @Test
-    void prTestThree() {
+    void printTestThree() {
         String program = "declare x \n" +
                 "set x = 10\n" +
-                "pr x";
+                "print x";
         assertEquals(true, new MyParser().parse(program));
     }
 
@@ -89,17 +89,17 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "if x = y then\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
                 "set y = 10\n" +
                 " endif\n" +
                 "set x = 15\n" +
                 "if x = y then\n" +
-                " pr x\n" +
-                " pr y\n" +
+                " print x\n" +
+                " print y\n" +
                 " endif";
         assertEquals(true, new MyParser().parse(program));
     }
@@ -112,8 +112,8 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "if x = y then\n" +
-                " pr x\n" +
-                " pr y";
+                " print x\n" +
+                " print y";
         assertEquals(false, new MyParser().parse(program));
     }
 
@@ -125,27 +125,27 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "if x = y then\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
-                " pr x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
+                " print x\n" +
                 "set y = 10\n" +
                 "if x = y then\n" +
-                " pr y\n" +
-                " pr y\n" +
-                " pr y\n" +
-                " pr y\n" +
-                " pr y\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
+                " print y\n" +
                 " calc y = x + y" +
-                " pr y\n" +
+                " print y\n" +
                 " endif\n" +
                 " endif\n" + // notice that we put an if statement inside an if statement
                 "set x = 20\n" +
                 "set y = 20\n" +
                 "if x = y then\n" +
-                " pr x\n" +
-                " pr y\n" +
+                " print x\n" +
+                " print y\n" +
                 " endif";
         assertEquals(true, new MyParser().parse(program));
     }
@@ -163,9 +163,9 @@ class MyParserTest {
                 "if y = z then\n" +
                 "if z = x then\n" +
                 "if y = y then\n" +
-                " pr x" +
-                " pr y" +
-                " pr z" +
+                " print x" +
+                " print y" +
+                " print z" +
                 " endif\n" +
                 " endif\n" +
                 " endif\n" +
@@ -187,9 +187,9 @@ class MyParserTest {
                 "calc w = x + y + z\n" +
                 "calc x = x + y\n" +
                 "calc z = x + y + w + z + x\n" +
-                " pr w\n" +
-                " pr x\n" +
-                " pr z";
+                " print w\n" +
+                " print x\n" +
+                " print z";
         assertEquals(true, new MyParser().parse(program));
     }
 
@@ -204,7 +204,7 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "calc z = x + y + w + x\n" +
-                " pr z";
+                " print z";
         assertEquals(true, new MyParser().parse(program));
     }
 
@@ -219,7 +219,7 @@ class MyParserTest {
                 "set x = 10\n" +
                 "set y = 15\n" +
                 "calc z = x + y + w + x + z\n" +
-                " pr z";
+                " print z";
         assertEquals(false, new MyParser().parse(program));
     }
 
@@ -235,11 +235,11 @@ class MyParserTest {
                 "set z = 20\n" +
                 "calc w = x + y + z\n" +
                 "if x = y then\n" +
-                " pr w\n" +
-                " pr x\n" +
+                " print w\n" +
+                " print x\n" +
                 "endif\n" +
-                "pr y\n" +
-                "pr z";
+                "print y\n" +
+                "print z";
         // Should return NO syntax error
         assertEquals(true, new MyParser().parse(program));
     }
@@ -251,7 +251,7 @@ class MyParserTest {
                 "set w = 5\n" +
                 "set x = 10\n" +
                 "if w x then\n" +
-                " pr w\n" +
+                " print w\n" +
                 "endif";
         // Should return A syntax error
         assertEquals(false, new MyParser().parse(program));
