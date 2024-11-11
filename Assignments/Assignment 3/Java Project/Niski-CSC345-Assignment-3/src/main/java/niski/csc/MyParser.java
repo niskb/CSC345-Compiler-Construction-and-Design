@@ -7,9 +7,17 @@ package niski.csc;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyParser {
+
+    /**
+     * Abstract Syntax Tree
+     */
+    private AbstractSyntaxTree outer = new AbstractSyntaxTree();
+    private AbstractSyntaxTree.NodeDecls nodeDecls;
+    private AbstractSyntaxTree.NodeStmts nodeStmts;
 
     /**
      * Parsing Error Codes
@@ -57,9 +65,6 @@ public class MyParser {
      */
     private boolean match(MyScanner.TOKEN expectedToken) {
         if (nextToken == expectedToken) {
-            System.out.println("Lexeme Scanned: " + scanner.getLastLexeme());
-            System.out.println("Token, \"" + nextToken + "\" matches with expected token, \"" + expectedToken + "\"");
-            System.out.println("Token Buffer:\n" + scanner.getTokenBufferString());
             getNextToken();
             return true;
         }
@@ -81,12 +86,20 @@ public class MyParser {
         scanner = new MyScanner(new PushbackReader(new StringReader(program)));
         nextToken = getNextToken();
 
+        AbstractSyntaxTree.NodeProgram nodeProgram = null;
         // Parse program
         if (nextToken != MyScanner.TOKEN.SCANEOF) {
-            program();
+            nodeProgram = program();
         }
         if (match(MyScanner.TOKEN.SCANEOF)) {
             System.out.println("\nParsing successful.");
+            // Abstract Syntax Tree Display
+            System.out.println();
+            // Reverse the list before displaying because of .addAll()
+            outer.astRoot.nodeDecls.nodeIdList = outer.astRoot.nodeDecls.nodeIdList.reversed();
+            // Display AST
+            outer.display();
+            System.out.println();
             return true;
         } else {
             System.out.println("\nParsing failed!");
@@ -114,27 +127,33 @@ public class MyParser {
     /**
      * <Program>
      */
-    private void program() {
+    private AbstractSyntaxTree.NodeProgram program() {
         decls();
-        stmts(true);
+        List<AbstractSyntaxTree.NodeStmt> nodeStmtsList = outer.new NodeStmts().nodeStmtList;
+        stmts(nodeStmtsList);
+        AbstractSyntaxTree.NodeProgram nodeProgram = outer.astRoot;
+        return nodeProgram;
     }
 
     /**
      * <Decls>
+     *
      */
-    private void decls() {
+    private AbstractSyntaxTree.NodeDecls decls() {
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Decls>
-            decl();
+            AbstractSyntaxTree.NodeId nodeId = decl();
             if (nextToken == MyScanner.TOKEN.DECLARE) {
                 decls();
             }
         }
+        return outer.astRoot.nodeDecls;
     }
 
     /**
      * <Decl>
+     *
      */
-    private void decl() {
+    private AbstractSyntaxTree.NodeId decl() {
         if (!match(MyScanner.TOKEN.DECLARE)) {
             System.exit(MATCH_ERROR);
         }
@@ -142,33 +161,30 @@ public class MyParser {
         if (!match(MyScanner.TOKEN.ID)) {
             System.exit(MATCH_ERROR);
         }
-        declareID(id);
+        return declareID(id);
     }
-
 
     /**
      * <Stmts>
-     * This method has a parameter for when the if statement is either true or false
-     * This parameter is important because we do not want to execute the statements inside the if statement when it is false
-     *
-     * @param statementTrue
      */
-    private void stmts(boolean statementTrue) {
+    private AbstractSyntaxTree.NodeStmts stmts(List<AbstractSyntaxTree.NodeStmt> nodeStmtsList) {
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Stmts>
-            stmt(statementTrue);
+            AbstractSyntaxTree.NodeStmt nodeStmt = stmt();
             if ((nextToken == MyScanner.TOKEN.PRINT) || (nextToken == MyScanner.TOKEN.SET) || (nextToken == MyScanner.TOKEN.IF) || (nextToken == MyScanner.TOKEN.CALC)) {
-                stmts(statementTrue);
+                stmts(nodeStmtsList);
             }
+            nodeStmtsList.add(nodeStmt);
         }
+        outer.astRoot.nodeStmts.nodeStmtList.addAll(nodeStmtsList);
+        AbstractSyntaxTree.NodeStmts statements = outer.new NodeStmts();
+        statements.nodeStmtList.addAll(nodeStmtsList);
+        return statements;
     }
 
     /**
      * <Stmt>
-     * If the statementTrue parameter is true, the block is able to execute the statements, otherwise just parse the statement
-     *
-     * @param statementTrue
      */
-    private void stmt(boolean statementTrue) {
+    private AbstractSyntaxTree.NodeStmt stmt() {
         // Parse Print <Stmt>
         if ((nextToken == MyScanner.TOKEN.PRINT)) {
             if (!match(MyScanner.TOKEN.PRINT)) {
@@ -178,9 +194,7 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.ID)) {
                 System.exit(MATCH_ERROR);
             }
-            if (statementTrue) {
-                printStatement(id);
-            }
+            return printStatement(id);
         }
         // Parse Set <Stmt>
         else if (nextToken == MyScanner.TOKEN.SET) {
@@ -198,9 +212,7 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
             }
-            if (statementTrue) {
-                setID(id, intLiteral);
-            }
+            setID(id, intLiteral);
         }
         // Parse If <Stmt>
         else if (nextToken == MyScanner.TOKEN.IF) {
@@ -221,20 +233,21 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.THEN)) {
                 System.exit(MATCH_ERROR);
             }
-            // Inner Statements
-            // Determines whether to execute the statements in the if statement block at the parser level
-            if (ifStatement(id1, id2) && statementTrue) { // If the statement is true and if the previous statement was true
-                // Parse <Stmts>
-                stmts(true);
-            } else { // The if statement is false
-                // We still have to parse the inside block of the if statement
-                // Parse <Stmts>
-                stmts(false);
-            }
+            // Inner Statements <Stmts>
+            List<AbstractSyntaxTree.NodeStmt> nodeStmtsList = outer.new NodeStmts().nodeStmtList; // Keep track of statements in if statement
+            AbstractSyntaxTree.NodeStmts ifNodeStmts = stmts(nodeStmtsList);
             // End of If
             if (!match(MyScanner.TOKEN.ENDIF)) {
                 System.exit(MATCH_ERROR);
             }
+            ifStatement(id1, id2);
+            // Abstract Syntax Tree <If>
+            AbstractSyntaxTree.NodeId leftHandSide = outer.new NodeId();
+            leftHandSide.variableName = id1;
+            AbstractSyntaxTree.NodeId rightHandSide = outer.new NodeId();
+            rightHandSide.variableName = id2;
+            AbstractSyntaxTree.NodeIf nodeIf = outer.new NodeIf(leftHandSide, ifNodeStmts, rightHandSide);
+            return nodeIf;
         }
         // Parse Calc <Stmt>
         else if (nextToken == MyScanner.TOKEN.CALC) {
@@ -248,84 +261,105 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.EQUALS)) {
                 System.exit(MATCH_ERROR);
             }
-            // Calculate the sum at the parser level; these recursive descent parser methods have an "int" return value
-            // We can calculate the sum recursively
-            if (statementTrue) {
-                calcID(id);
-                // Parse <Sum>, then update ID
-                int calc = sum();
-                // Update ID - Do not update the value! "There is no need to do actual calculations during parsing at this point"
-                /*symbolTable.get(id).name = String.valueOf(calc);*/
-                System.out.println(id + " has been calculated as " + symbolTable.get(id).name + ".\nSymbol Table has not been updated!\nCalc parse successful.");
-            } else { // Just run <Sum> and do not update the ID because the if statement/block was false
-                calcID(id);
-                sum();
-                /*System.out.println("No ID has been updated because the if statement was false!");*/
-            }
+            calcID(id);
+            sum();
+            // Abstract Syntax Tree <Calc>
+            AbstractSyntaxTree.NodeId nodeId = outer.new NodeId();
+            nodeId.variableName = id;
+            AbstractSyntaxTree.NodeExpr sumExpr = outer.new NodeExpr() {
+                @Override
+                public void display() {
+                    System.out.println("AST sum");
+                }
+            };
+            AbstractSyntaxTree.NodeCalc nodeCalc = outer.new NodeCalc(nodeId, sumExpr);
+            return nodeCalc;
         }
+        return null;
     }
 
     /**
      * <Sum>
-     * Returns the sum calculation recursively
-     *
-     * @return
      */
-    private int sum() {
-        // Parse <Value>
-        int calc = value();
-        // Parse <SumEnd>
-        calc = sumEnd(calc);
-        return calc;
+    private AbstractSyntaxTree.NodeExpr sum() {
+        AbstractSyntaxTree.NodeExpr valueExpr = value();
+        sumEnd();
+        return valueExpr;
     }
 
     /**
      * <Value>
-     * Returns a parsing error if there is a Match error between ID or INTLITERAL
-     * Returns the value of the ID or INTLITERAL
-     *
-     * @return
      */
-    private int value() {
+    private AbstractSyntaxTree.NodeExpr value() {
         if (nextToken == MyScanner.TOKEN.ID) {
             String id = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.ID)) {
                 System.exit(MATCH_ERROR);
             }
             valueID(id);
-            return Integer.parseInt(symbolTable.get(id).name);
+            // Abstract Syntax Tree (Id)
+            // Left side is Id, so right side is '+'
+            AbstractSyntaxTree.NodeId nodeId = outer.new NodeId();
+            nodeId.variableName = id;
+            // Is next token PLUS?
+            if (nextToken == MyScanner.TOKEN.PLUS) {
+                // Sum
+                AbstractSyntaxTree.NodeExpr sumExpr = outer.new NodeExpr() {
+                    @Override
+                    public void display() {
+                        System.out.println("AST sum");
+                    }
+                };
+                AbstractSyntaxTree.NodePlus nodePlus = outer.new NodePlus(nodeId, sumExpr);
+                return nodePlus;
+            } else {
+                AbstractSyntaxTree.NodePlus nodePlus = outer.new NodePlus(nodeId, null);
+                return nodePlus;
+                // We can save space on the AST if the sum was adding a value on the left-hand side on the previous expression plus the left-hand side on the left-hand side and the other side was null (Put the left-hand side into the previous right-hand side)
+            }
         } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
             String intLiteral = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
             }
-            return Integer.parseInt(intLiteral);
+            // Abstract Syntax Tree (Int Literal)
+            // Left side is Int Literal so right side is '+'
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = outer.new NodeIntLiteral();
+            nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
+            // Is next token PLUS?
+            if (nextToken == MyScanner.TOKEN.PLUS) {
+                // Sum
+                AbstractSyntaxTree.NodeExpr nodeExpr = outer.new NodeExpr() {
+                    @Override
+                    public void display() {
+                        System.out.println("sum");
+                    }
+                };
+                AbstractSyntaxTree.NodePlus nodePlus = outer.new NodePlus(nodeIntLiteral, nodeExpr);
+                return nodePlus;
+            } else {
+                AbstractSyntaxTree.NodePlus nodePlus = outer.new NodePlus(nodeIntLiteral, null);
+                return nodePlus;
+                // We can save space on the AST if the sum was adding a value on the left-hand side on the previous expression plus the left-hand side on the left-hand side and the other side was null (Put the left-hand side into the previous right-hand side)
+            }
         }
-        return 0;
+        return null;
     }
 
     /**
      * <SumEnd>
-     * Continues to parse the program recursively
-     * Returns the sum calculation
-     *
-     * @param calc
-     * @return
      */
-    private int sumEnd(int calc) {
+    private void sumEnd() {
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <SumEnd>
             if (nextToken == MyScanner.TOKEN.PLUS) {
                 if (!match(MyScanner.TOKEN.PLUS)) {
                     System.exit(MATCH_ERROR);
                 }
-                // Parse <Value>
-                calc += value();
-                // Parse <SumEnd>
-                calc = sumEnd(calc);
+                value();
+                sumEnd();
             }
-            return calc;
         }
-        return calc;
+
     }
 
     /**
@@ -338,18 +372,22 @@ public class MyParser {
      * Returns a parsing error if the ID is already inside the symbol table
      *
      * @param id
+     * @return
      */
-    private void declareID(String id) {
+    private AbstractSyntaxTree.NodeId declareID(String id) {
         if (!symbolTable.containsKey(id)) {
             SymbolTableItem newItem = new SymbolTableItem();
             newItem.name = ""; // empty because we are just declaring it
             newItem.type = TYPE.INTDATATYPE;
             symbolTable.put(id, newItem);
-            System.out.println(id + " has been declared.");
+            AbstractSyntaxTree.NodeId nodeId = outer.new NodeId();
+            nodeId.variableName = id;
+            outer.astRoot.nodeDecls.nodeIdList.add(nodeId);
         } else {
             generateDeclarationErrorMessage(id);
             System.exit(DECLARATION_ERROR);
         }
+        return null;
     }
 
     /**
@@ -359,19 +397,23 @@ public class MyParser {
      *
      * @param id
      */
-    private void printStatement(String id) {
+    private AbstractSyntaxTree.NodePrint printStatement(String id) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
             System.exit(UNDECLARED_ERROR);
         } else {
             SymbolTableItem printID = symbolTable.get(id);
             if (printID.name.isEmpty()) {
-                generateUndefinedErrorMessage(id);
-                System.exit(UNDEFINED_ERROR);
-            } else {
-                System.out.println("ID: " + id + "\tValue: " + printID.name);
+                generatePrintWarningMessage(id);
+            } else { // Print the ID
+                AbstractSyntaxTree.NodeId nodeId = outer.new NodeId();
+                nodeId.variableName = id;
+                AbstractSyntaxTree.NodePrint nodePrint = outer.new NodePrint(nodeId);
+                outer.astRoot.nodeStmts.nodeStmtList.add(nodePrint);
+                return nodePrint;
             }
         }
+        return null;
     }
 
     /**
@@ -382,15 +424,23 @@ public class MyParser {
      * @param id
      * @param intLiteral
      */
-    private void setID(String id, String intLiteral) {
+    private AbstractSyntaxTree.NodeSet setID(String id, String intLiteral) {
         if (!symbolTable.containsKey(id)) {
             generateUndeclaredErrorMessage(id);
             System.exit(UNDECLARED_ERROR);
-        } else {
+        } else { // Set the ID
             SymbolTableItem setID = symbolTable.get(id);
             setID.name = intLiteral;
-            System.out.println(id + " has been set to " + intLiteral + ".");
+
+            AbstractSyntaxTree.NodeId nodeId = outer.new NodeId();
+            nodeId.variableName = id;
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = outer.new NodeIntLiteral();
+            nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
+            AbstractSyntaxTree.NodeSet nodeSet = outer.new NodeSet(nodeId, nodeIntLiteral);
+            outer.astRoot.nodeStmts.nodeStmtList.add(nodeSet);
+            return nodeSet;
         }
+        return null;
     }
 
     /**
@@ -418,12 +468,11 @@ public class MyParser {
             } else if (ifID2.name.isEmpty()) {
                 generateUndefinedErrorMessage(id2);
                 System.exit(UNDEFINED_ERROR);
-            } else {
-                if (ifID1.name.equals(ifID2.name)) {
-                    System.out.println("If Statement: " + id1 + " = " + id2 + " is true.");
+            } else { // If statement
+                if (ifID1.name.equals(ifID2.name)) { // If statement was true
                     return true;
-                } else {
-                    System.out.println("If Statement: " + id1 + " = " + id2 + " is false.");
+                } else { // If statement was false
+                    return false;
                 }
             }
         }
@@ -446,7 +495,7 @@ public class MyParser {
             if (calcSTI.name.isEmpty()) {
                 generateCalcWarningMessage(id);
             }
-            System.out.println("Calc: " + id + "\tCurrent Value: " + calcSTI.name);
+            // Current ID in Calc
         }
     }
 
@@ -465,8 +514,7 @@ public class MyParser {
             if (valueSTI.name.isEmpty()) {
                 generateUndefinedErrorMessage(id);
                 System.exit(UNDEFINED_ERROR);
-            } else {
-                System.out.println("\tValue: " + id + "\tAdd: " + valueSTI.name);
+            } else { // Add value ID
             }
         }
     }
@@ -521,6 +569,17 @@ public class MyParser {
     /**
      * Parsing Warning Messages
      */
+    /**
+     * Undefined ID in Print
+     *
+     * @param id
+     */
+    private void generatePrintWarningMessage(String id) {
+        System.out.println("\nParse Warning");
+        System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
+        System.out.println("Warning Message: " + id + " being used in print function is undefined!\n");
+    }
+
     /**
      * Undefined ID in Calculation
      *

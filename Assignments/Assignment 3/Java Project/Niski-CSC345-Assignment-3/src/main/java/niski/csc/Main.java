@@ -24,7 +24,7 @@ public class Main {
             throw new RuntimeException(e);
         }
         boolean parse = new MyParser().parse(program);
-        System.out.println("Result: " + parse);
+        System.out.println("Result: " + parse + "\n");
     }
 
 }

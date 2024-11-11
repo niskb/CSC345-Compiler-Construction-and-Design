@@ -49,11 +49,12 @@ class MyParserTest {
     }
 
     // Print test for an undefined variable
+    // Let the programmer figure out what's wrong
     @Test
     void printTestTwo() {
         String program = "declare x \n" +
                 "print x";
-        assertEquals(false, new MyParser().parse(program));
+        assertEquals(true, new MyParser().parse(program));
     }
 
     // Print test for a declared and set variable
@@ -169,7 +170,7 @@ class MyParserTest {
                 " endif\n" +
                 " endif\n" +
                 " endif\n" +
-                " endif\n";
+                " endif";
         assertEquals(true, new MyParser().parse(program));
     }
 
@@ -194,6 +195,7 @@ class MyParserTest {
     }
 
     // Calc test undefined ID variable
+    // The parser will still return true even though we haven't set z
     @Test
     void calcTestTwo() {
         String program = "declare w \n" +
@@ -209,6 +211,7 @@ class MyParserTest {
     }
 
     // Calc test undefined ID variable and this ID is being used in the calculation
+    // Now it should fail
     @Test
     void calcTestThree() {
         String program = "declare w \n" +
