@@ -1,0 +1,11 @@
+declare w
+declare x
+declare y
+set w = 5
+set x = 10
+set y = 15
+calc w = x + y + 4
+if x = y then
+print w
+print x
+endif
