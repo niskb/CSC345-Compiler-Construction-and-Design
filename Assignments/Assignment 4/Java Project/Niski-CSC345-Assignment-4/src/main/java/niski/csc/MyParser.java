@@ -16,7 +16,7 @@ public class MyParser {
     /**
      * Abstract Syntax Tree Class Object
      */
-    AbstractSyntaxTree ast = new AbstractSyntaxTree();
+    AbstractSyntaxTree abstractSyntaxTree = new AbstractSyntaxTree();
 
     /**
      * Parsing Error Codes
@@ -96,7 +96,7 @@ public class MyParser {
             System.out.println("\nParsing successful.\n");
             // Display Abstract Syntax Tree
             System.out.println("Abstract Syntax Tree:");
-            ast.display();
+            abstractSyntaxTree.display();
             return true;
         } else {
             System.out.println("\nParsing failed!");
@@ -126,16 +126,16 @@ public class MyParser {
      */
     private AbstractSyntaxTree.NodeProgram program() {
         AbstractSyntaxTree.NodeDecls nodeDecls = decls();
-        ast.root.nodeDecls = nodeDecls;
-        ast.root.nodeStmts = stmts();
-        return ast.root;
+        abstractSyntaxTree.root.nodeDecls = nodeDecls;
+        abstractSyntaxTree.root.nodeStmts = stmts();
+        return abstractSyntaxTree.root;
     }
 
     /**
      * <Decls>
      */
     private AbstractSyntaxTree.NodeDecls decls() {
-        AbstractSyntaxTree.NodeDecls outer = ast.new NodeDecls();
+        AbstractSyntaxTree.NodeDecls outer = abstractSyntaxTree.new NodeDecls();
         if (nextToken != MyScanner.TOKEN.SCANEOF) {
             AbstractSyntaxTree.NodeId nodeId = decl();
             outer.nodeDeclList.add(nodeId);
@@ -163,7 +163,7 @@ public class MyParser {
         }
         declareID(id);
 
-        AbstractSyntaxTree.NodeId nodeId = ast.new NodeId();
+        AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
         nodeId.variableName = id;
         return nodeId;
     }
@@ -173,7 +173,7 @@ public class MyParser {
      * <Stmts>
      */
     private AbstractSyntaxTree.NodeStmts stmts() {
-        AbstractSyntaxTree.NodeStmts outer = ast.new NodeStmts();
+        AbstractSyntaxTree.NodeStmts outer = abstractSyntaxTree.new NodeStmts();
         if (nextToken != MyScanner.TOKEN.SCANEOF) { // empty production <Stmts>
             AbstractSyntaxTree.NodeStmt nodeStmt = stmt();
             outer.nodeStmtList.add(nodeStmt);
@@ -202,9 +202,9 @@ public class MyParser {
             }
             printStatement(id);
 
-            AbstractSyntaxTree.NodeId nodeId = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
             nodeId.variableName = id;
-            AbstractSyntaxTree.NodePrint nodePrint = ast.new NodePrint(nodeId);
+            AbstractSyntaxTree.NodePrint nodePrint = abstractSyntaxTree.new NodePrint(nodeId);
             return nodePrint;
         }
         // Parse Set <Stmt>
@@ -225,11 +225,11 @@ public class MyParser {
             }
             setID(id, intLiteral);
 
-            AbstractSyntaxTree.NodeId nodeId = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
             nodeId.variableName = id;
-            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = ast.new NodeIntLiteral();
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral();
             nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
-            AbstractSyntaxTree.NodeSet nodeSet = ast.new NodeSet(nodeId, nodeIntLiteral);
+            AbstractSyntaxTree.NodeSet nodeSet = abstractSyntaxTree.new NodeSet(nodeId, nodeIntLiteral);
             return nodeSet;
         }
         // Parse If <Stmt>
@@ -260,11 +260,11 @@ public class MyParser {
                 System.exit(MATCH_ERROR);
             }
 
-            AbstractSyntaxTree.NodeId nodeIdLeft = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeIdLeft = abstractSyntaxTree.new NodeId();
             nodeIdLeft.variableName = id1;
-            AbstractSyntaxTree.NodeId nodeIdRight = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeIdRight = abstractSyntaxTree.new NodeId();
             nodeIdRight.variableName = id2;
-            AbstractSyntaxTree.NodeIf nodeIf = ast.new NodeIf(nodeIdLeft, nodeIdRight, nodeInnerStmts);
+            AbstractSyntaxTree.NodeIf nodeIf = abstractSyntaxTree.new NodeIf(nodeIdLeft, nodeIdRight, nodeInnerStmts);
             return nodeIf;
         }
         // Parse Calc <Stmt>
@@ -282,12 +282,12 @@ public class MyParser {
             calcID(id);
             AbstractSyntaxTree.NodePlus nodePlus = sum();
 
-            AbstractSyntaxTree.NodeId nodeId = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
             nodeId.variableName = id;
-            AbstractSyntaxTree.NodeCalc nodeCalc = ast.new NodeCalc(nodeId, nodePlus);
+            AbstractSyntaxTree.NodeCalc nodeCalc = abstractSyntaxTree.new NodeCalc(nodeId, nodePlus);
             return nodeCalc;
         }
-        AbstractSyntaxTree.NodeStmt temp = ast.new NodeStmt() {
+        AbstractSyntaxTree.NodeStmt temp = abstractSyntaxTree.new NodeStmt() {
             @Override
             public void display() {
                 System.out.println("unknown\n");
@@ -307,7 +307,7 @@ public class MyParser {
         // Right-hand Side
         AbstractSyntaxTree.NodePlus nodePlusRight = sumEnd();
 
-        AbstractSyntaxTree.NodePlus nodePlus = ast.new NodePlus(nodePlusLeft, nodePlusRight);
+        AbstractSyntaxTree.NodePlus nodePlus = abstractSyntaxTree.new NodePlus(nodePlusLeft, nodePlusRight);
         return nodePlus;
     }
 
@@ -322,7 +322,7 @@ public class MyParser {
                 System.exit(MATCH_ERROR);
             }
             valueID(id);
-            AbstractSyntaxTree.NodeId nodeId = ast.new NodeId();
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
             nodeId.variableName = id;
             return nodeId;
         } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
@@ -330,11 +330,11 @@ public class MyParser {
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
             }
-            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = ast.new NodeIntLiteral();
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral();
             nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
             return nodeIntLiteral;
         }
-        AbstractSyntaxTree.NodeExpr temp = ast.new NodeExpr() {
+        AbstractSyntaxTree.NodeExpr temp = abstractSyntaxTree.new NodeExpr() {
             @Override
             public void display() {
                 System.out.println("unknown\n");
@@ -358,7 +358,7 @@ public class MyParser {
                 AbstractSyntaxTree.NodeExpr nodeExprLeft = value();
                 // Right-hand Side
                 AbstractSyntaxTree.NodePlus nodePlusRight = sumEnd();
-                AbstractSyntaxTree.NodePlus nodePlus = ast.new NodePlus(nodeExprLeft, nodePlusRight);
+                AbstractSyntaxTree.NodePlus nodePlus = abstractSyntaxTree.new NodePlus(nodeExprLeft, nodePlusRight);
                 return nodePlus;
             }
             return null;
