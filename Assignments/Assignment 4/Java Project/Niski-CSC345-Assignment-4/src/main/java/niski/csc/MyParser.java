@@ -25,6 +25,8 @@ public class MyParser {
     private static final int DECLARATION_ERROR = -2;
     private static final int UNDECLARED_ERROR = -3;
     private static final int UNDEFINED_ERROR = -4;
+    private static final int CALC_EXPECTED_ID_OR_INT_LITERAL_ERROR = -5;
+    private static final int UNKNOWN_ERROR = -6;
 
     /**
      * Type
@@ -289,6 +291,8 @@ public class MyParser {
             @Override
             public void display() {
                 System.out.println("unknown\n");
+                generateUnknownErrorMessage();
+                System.exit(UNKNOWN_ERROR);
             }
         };
         return temp;
@@ -334,6 +338,8 @@ public class MyParser {
             @Override
             public void display() {
                 System.out.println("unknown\n");
+                generateCalcExpectedErrorMessage();
+                System.exit(CALC_EXPECTED_ID_OR_INT_LITERAL_ERROR);
             }
         };
         return temp;
@@ -530,6 +536,23 @@ public class MyParser {
         System.out.println("\nParse Error");
         System.out.println("Received: " + MyScanner.TOKEN.ID + "\tBuffer " + id);
         System.out.println("Error Message: " + id + " is undefined!");
+    }
+
+    /**
+     * No ID or Int Literal After '+' Error
+     */
+    private void generateCalcExpectedErrorMessage() {
+        System.out.println("\nParse Error");
+        System.out.println("Received: +\tBuffer +");
+        System.out.println("Error Message: No id or int literal after +!");
+    }
+
+    /**
+     * Unknown Error
+     */
+    private void generateUnknownErrorMessage() {
+        System.out.println("\nParse Error");
+        System.out.println("Fatal Error Message: Unknown Error!");
     }
 
     /**
