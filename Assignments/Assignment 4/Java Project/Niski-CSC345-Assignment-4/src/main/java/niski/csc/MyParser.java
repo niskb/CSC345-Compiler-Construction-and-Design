@@ -97,6 +97,11 @@ public class MyParser {
             // Display Abstract Syntax Tree
             System.out.println("Abstract Syntax Tree:");
             abstractSyntaxTree.display();
+            // Generate Code
+            String code = abstractSyntaxTree.getCode();
+            // Print code
+            System.out.println("Generated code:");
+            System.out.println(code);
             return true;
         } else {
             System.out.println("\nParsing failed!");
@@ -287,6 +292,11 @@ public class MyParser {
                 generateUnknownErrorMessage();
                 System.exit(UNKNOWN_ERROR);
             }
+
+            @Override
+            public String generateCode() {
+                return "";
+            }
         };
         return temp;
     }
@@ -331,6 +341,11 @@ public class MyParser {
                 System.out.println("unknown\n");
                 generateCalcExpectedErrorMessage();
                 System.exit(CALC_EXPECTED_ID_OR_INT_LITERAL_ERROR);
+            }
+
+            @Override
+            public String generateCode() {
+                return "";
             }
         };
         return temp;

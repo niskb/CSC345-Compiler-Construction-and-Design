@@ -17,6 +17,7 @@ public class AbstractSyntaxTree {
      */
     public abstract class NodeBase {
         public abstract void display();
+        public abstract String generateCode();
     }
 
     /**
@@ -47,6 +48,15 @@ public class AbstractSyntaxTree {
         public void display() {
             System.out.println("AST id " + variableName);
         }
+
+        @Override
+        public String generateCode() {
+            if (variableName.isEmpty()) {
+                return "";
+            } else {
+                return variableName;
+            }
+        }
     }
 
     /**
@@ -62,6 +72,11 @@ public class AbstractSyntaxTree {
         @Override
         public void display() {
             System.out.println("AST int literal " + intLiteral);
+        }
+
+        @Override
+        public String generateCode() {
+            return String.valueOf(intLiteral);
         }
     }
 
@@ -92,6 +107,11 @@ public class AbstractSyntaxTree {
                 System.out.println();
             }
         }
+
+        @Override
+        public String generateCode() {
+            return "";
+        }
     }
 
     /**
@@ -109,6 +129,11 @@ public class AbstractSyntaxTree {
             System.out.println("AST print");
             printId.display();
             System.out.println();
+        }
+
+        @Override
+        public String generateCode() {
+            return "";
         }
     }
 
@@ -131,6 +156,11 @@ public class AbstractSyntaxTree {
             nodeIntLiteral.display();
             System.out.println();
         }
+
+        @Override
+        public String generateCode() {
+            return "";
+        }
     }
 
     /**
@@ -151,6 +181,11 @@ public class AbstractSyntaxTree {
             nodeId.display();
             nodeExpr.display();
         }
+
+        @Override
+        public String generateCode() {
+            return "";
+        }
     }
 
     /**
@@ -164,6 +199,11 @@ public class AbstractSyntaxTree {
             for (int i = 0; i < nodeStmtList.size(); i++) {
                 nodeStmtList.get(i).display();
             }
+        }
+
+        @Override
+        public String generateCode() {
+            return "";
         }
     }
 
@@ -194,6 +234,11 @@ public class AbstractSyntaxTree {
             }
             System.out.println("AST endif\n");
         }
+
+        @Override
+        public String generateCode() {
+            return "";
+        }
     }
 
     /**
@@ -207,6 +252,15 @@ public class AbstractSyntaxTree {
             for (int i = 0; i < nodeDeclList.size(); i++) {
                 nodeDeclList.get(i).display();
             }
+        }
+
+        @Override
+        public String generateCode() {
+            String lines = "";
+            for (int i = 0; i < nodeDeclList.size(); i++) {
+                lines += "var int " + nodeDeclList.get(i).generateCode() + "\n";
+            }
+            return lines;
         }
     }
 
@@ -230,6 +284,11 @@ public class AbstractSyntaxTree {
             // Traverse Statements
             System.out.println("\nAST Statements");
             nodeStmts.display();
+        }
+
+        @Override
+        public String generateCode() {
+            return "";
         }
     }
 
@@ -265,6 +324,45 @@ public class AbstractSyntaxTree {
      */
     public void display() {
         this.root.display();
+    }
+
+    /**
+     * Code Generation
+     */
+    /**
+     * List to store generated lines of code
+     */
+    private List<String> generatedLines = new ArrayList<>();
+    /**
+     * Generate Pseudo Assembler Code
+     * Traverse the tree
+     * The parent node should call this method on child nodes as necessary
+     */
+    private void generateCode() {
+        // Variable declaration section
+        generatedLines.add(".data");
+        // Generate Code for the Declarations
+        generatedLines.add(this.root.nodeDecls.generateCode());
+        // Code section
+        generatedLines.add(".code");
+        // Generate Code for the Statements
+        generatedLines.add(this.root.nodeStmts.generateCode());
+        this.root.nodeStmts.generateCode();
+    }
+
+    /**
+     * Gets code from program
+     * This method should return one String for the whole program
+     * @return
+     */
+    public String getCode() {
+        // Call generateCode() first to populate the List<String> generatedLines member variable
+        generateCode();
+        StringBuilder code = new StringBuilder();
+        for (String generatedLine : generatedLines) {
+            code.append(generatedLine).append("\n");
+        }
+        return code.toString();
     }
 
 }
