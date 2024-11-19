@@ -37,7 +37,11 @@ public class AbstractSyntaxTree {
      * Id Node
      */
     public class NodeId extends NodeExpr {
-        public String variableName;
+        private String variableName;
+
+        public NodeId(String variableName) {
+            this.variableName = variableName;
+        }
 
         @Override
         public void display() {
@@ -49,7 +53,11 @@ public class AbstractSyntaxTree {
      * Int Literal Node
      */
     public class NodeIntLiteral extends NodeExpr {
-        public int intLiteral;
+        private int intLiteral;
+
+        public NodeIntLiteral(int intLiteral) {
+            this.intLiteral = intLiteral;
+        }
 
         @Override
         public void display() {
@@ -63,8 +71,8 @@ public class AbstractSyntaxTree {
      * Right-hand Side is the Expression on the right
      */
     public class NodePlus extends NodeExpr {
-        public NodeExpr leftHandSide;
-        public NodeExpr rightHandSide;
+        private NodeExpr leftHandSide;
+        private NodeExpr rightHandSide;
 
         public NodePlus(NodeExpr leftHandSide, NodeExpr rightHandSide) {
             this.leftHandSide = leftHandSide;
@@ -90,7 +98,7 @@ public class AbstractSyntaxTree {
      * Print Node
      */
     public class NodePrint extends NodeStmt {
-        public NodeId printId;
+        private NodeId printId;
 
         public NodePrint(NodeId printId) {
             this.printId = printId;
@@ -108,8 +116,8 @@ public class AbstractSyntaxTree {
      * Set Node
      */
     public class NodeSet extends NodeStmt {
-        public NodeId nodeId;
-        public NodeIntLiteral nodeIntLiteral;
+        private NodeId nodeId;
+        private NodeIntLiteral nodeIntLiteral;
 
         public NodeSet(NodeId nodeId, NodeIntLiteral nodeIntLiteral) {
             this.nodeId = nodeId;
@@ -129,8 +137,8 @@ public class AbstractSyntaxTree {
      * Calc Node
      */
     public class NodeCalc extends NodeStmt {
-        public NodeId nodeId;
-        public NodeExpr nodeExpr;
+        private NodeId nodeId;
+        private NodeExpr nodeExpr;
 
         public NodeCalc(NodeId nodeId, NodeExpr nodeExpr) {
             this.nodeId = nodeId;
@@ -148,17 +156,24 @@ public class AbstractSyntaxTree {
     /**
      * List of Statement Nodes
      */
-    public class NodeStmts {
+    public class NodeStmts extends NodeBase {
         public List<NodeStmt> nodeStmtList = new ArrayList<>();
+
+        @Override
+        public void display() {
+            for (int i = 0; i < nodeStmtList.size(); i++) {
+                nodeStmtList.get(i).display();
+            }
+        }
     }
 
     /**
      * If Node
      */
     public class NodeIf extends NodeStmt {
-        public NodeId leftHandSide;
-        public NodeId rightHandSide;
-        public NodeStmts nodeStmts;
+        private NodeId leftHandSide;
+        private NodeId rightHandSide;
+        private NodeStmts nodeStmts;
 
         public NodeIf(NodeId leftHandSide, NodeId rightHandSide, NodeStmts nodeStmts) {
             this.leftHandSide = leftHandSide;
@@ -184,14 +199,21 @@ public class AbstractSyntaxTree {
     /**
      * List of Declaration Nodes
      */
-    public class NodeDecls {
+    public class NodeDecls extends NodeBase {
         public List<NodeId> nodeDeclList = new ArrayList<>();
+
+        @Override
+        public void display() {
+            for (int i = 0; i < nodeDeclList.size(); i++) {
+                nodeDeclList.get(i).display();
+            }
+        }
     }
 
     /**
      * Node that contains Program Declarations and Statements
      */
-    public class NodeProgram {
+    public class NodeProgram extends NodeBase {
         public NodeDecls nodeDecls;
         public NodeStmts nodeStmts;
 
@@ -200,12 +222,21 @@ public class AbstractSyntaxTree {
             this.nodeStmts = nodeStmts;
         }
 
+        @Override
+        public void display() {
+            // Traverse Declarations
+            System.out.println("AST Declarations");
+            nodeDecls.display();
+            // Traverse Statements
+            System.out.println("\nAST Statements");
+            nodeStmts.display();
+        }
     }
 
     /**
      * Abstract Syntax Tree Members
      */
-    public NodeProgram root = new NodeProgram(new NodeDecls(), new NodeStmts());
+    private NodeProgram root = new NodeProgram(new NodeDecls(), new NodeStmts());
 
     /**
      * Abstract Syntax Tree Methods
@@ -233,16 +264,7 @@ public class AbstractSyntaxTree {
      * Implemenation of Depth First Traversal of the Program Tree
      */
     public void display() {
-        // Traverse Declarations
-        System.out.println("AST Declarations");
-        for (int i = 0; i < this.root.nodeDecls.nodeDeclList.size(); i++) {
-            this.root.nodeDecls.nodeDeclList.get(i).display();
-        }
-        // Traverse Statements
-        System.out.println("\nAST Statements");
-        for (int i = 0; i < this.root.nodeStmts.nodeStmtList.size(); i++) {
-            this.root.nodeStmts.nodeStmtList.get(i).display();
-        }
+        this.root.display();
     }
 
 }

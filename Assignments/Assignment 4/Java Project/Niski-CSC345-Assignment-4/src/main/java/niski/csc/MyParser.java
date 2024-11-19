@@ -126,9 +126,9 @@ public class MyParser {
      */
     private AbstractSyntaxTree.NodeProgram program() {
         AbstractSyntaxTree.NodeDecls nodeDecls = decls();
-        abstractSyntaxTree.root.nodeDecls = nodeDecls;
-        abstractSyntaxTree.root.nodeStmts = stmts();
-        return abstractSyntaxTree.root;
+        abstractSyntaxTree.getRoot().nodeDecls = nodeDecls;
+        abstractSyntaxTree.getRoot().nodeStmts = stmts();
+        return abstractSyntaxTree.getRoot();
     }
 
     /**
@@ -163,8 +163,7 @@ public class MyParser {
         }
         declareID(id);
 
-        AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
-        nodeId.variableName = id;
+        AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId(id);
         return nodeId;
     }
 
@@ -202,8 +201,7 @@ public class MyParser {
             }
             printStatement(id);
 
-            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
-            nodeId.variableName = id;
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId(id);
             AbstractSyntaxTree.NodePrint nodePrint = abstractSyntaxTree.new NodePrint(nodeId);
             return nodePrint;
         }
@@ -225,10 +223,8 @@ public class MyParser {
             }
             setID(id, intLiteral);
 
-            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
-            nodeId.variableName = id;
-            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral();
-            nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId(id);
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral(Integer.parseInt(intLiteral));
             AbstractSyntaxTree.NodeSet nodeSet = abstractSyntaxTree.new NodeSet(nodeId, nodeIntLiteral);
             return nodeSet;
         }
@@ -260,10 +256,8 @@ public class MyParser {
                 System.exit(MATCH_ERROR);
             }
 
-            AbstractSyntaxTree.NodeId nodeIdLeft = abstractSyntaxTree.new NodeId();
-            nodeIdLeft.variableName = id1;
-            AbstractSyntaxTree.NodeId nodeIdRight = abstractSyntaxTree.new NodeId();
-            nodeIdRight.variableName = id2;
+            AbstractSyntaxTree.NodeId nodeIdLeft = abstractSyntaxTree.new NodeId(id1);
+            AbstractSyntaxTree.NodeId nodeIdRight = abstractSyntaxTree.new NodeId(id2);
             AbstractSyntaxTree.NodeIf nodeIf = abstractSyntaxTree.new NodeIf(nodeIdLeft, nodeIdRight, nodeInnerStmts);
             return nodeIf;
         }
@@ -282,8 +276,7 @@ public class MyParser {
             calcID(id);
             AbstractSyntaxTree.NodePlus nodePlus = sum();
 
-            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
-            nodeId.variableName = id;
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId(id);
             AbstractSyntaxTree.NodeCalc nodeCalc = abstractSyntaxTree.new NodeCalc(nodeId, nodePlus);
             return nodeCalc;
         }
@@ -322,16 +315,14 @@ public class MyParser {
                 System.exit(MATCH_ERROR);
             }
             valueID(id);
-            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId();
-            nodeId.variableName = id;
+            AbstractSyntaxTree.NodeId nodeId = abstractSyntaxTree.new NodeId(id);
             return nodeId;
         } else if (nextToken == MyScanner.TOKEN.INTLITERAL) {
             String intLiteral = scanner.getLastLexeme();
             if (!match(MyScanner.TOKEN.INTLITERAL)) {
                 System.exit(MATCH_ERROR);
             }
-            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral();
-            nodeIntLiteral.intLiteral = Integer.parseInt(intLiteral);
+            AbstractSyntaxTree.NodeIntLiteral nodeIntLiteral = abstractSyntaxTree.new NodeIntLiteral(Integer.parseInt(intLiteral));
             return nodeIntLiteral;
         }
         AbstractSyntaxTree.NodeExpr temp = abstractSyntaxTree.new NodeExpr() {
