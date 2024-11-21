@@ -16,7 +16,7 @@ public class MyParser {
     /**
      * Abstract Syntax Tree Class Object
      */
-    AbstractSyntaxTree abstractSyntaxTree = new AbstractSyntaxTree();
+    public AbstractSyntaxTree abstractSyntaxTree = new AbstractSyntaxTree();
 
     /**
      * Parsing Error Codes
@@ -93,15 +93,7 @@ public class MyParser {
             nodeProgram = program();
         }
         if (match(MyScanner.TOKEN.SCANEOF)) {
-            System.out.println("\nParsing successful.\n");
-            // Display Abstract Syntax Tree
-            System.out.println("Abstract Syntax Tree:");
-            abstractSyntaxTree.display();
-            // Generate Code
-            String code = abstractSyntaxTree.getCode();
-            // Print code
-            System.out.println("Generated code:");
-            System.out.println(code);
+            System.out.println("\nParsing successful.");
             return true;
         } else {
             System.out.println("\nParsing failed!");

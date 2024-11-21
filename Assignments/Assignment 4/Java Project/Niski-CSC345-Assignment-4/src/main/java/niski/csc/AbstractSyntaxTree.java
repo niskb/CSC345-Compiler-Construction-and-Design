@@ -5,7 +5,9 @@
 package niski.csc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AbstractSyntaxTree {
 
@@ -51,11 +53,14 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            if (variableName.isEmpty()) {
-                return "";
-            } else {
-                return variableName;
+            String reg = "";
+            for (int i = 0; i < registerIdMap.size(); i++) {
+                if (registerIdMap.containsKey(variableName)) {
+                    reg = registerIdMap.get(variableName);
+                    break;
+                }
             }
+            return reg;
         }
     }
 
@@ -76,7 +81,10 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            return String.valueOf(intLiteral);
+            String reg = getNextOpenRegister();
+            String line = String.format("loadintliteral %s, %d", reg, intLiteral);
+            generatedLines.add(line);
+            return reg;
         }
     }
 
@@ -133,7 +141,10 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            return "";
+            String reg = printId.generateCode();
+            String line = String.format("printi %s", reg);
+            generatedLines.add(line);
+            return reg;
         }
     }
 
@@ -159,7 +170,11 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            return "";
+            String reg = nodeIntLiteral.generateCode();
+            String line = String.format("storeintvar %s, %s", reg, nodeId.variableName);
+            generatedLines.add(line);
+            registerIdMap.put(nodeId.variableName, reg);
+            return reg;
         }
     }
 
@@ -184,6 +199,7 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
+            // Generate code for Expr first then add onto nodeId
             return "";
         }
     }
@@ -256,11 +272,7 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            String lines = "";
-            for (int i = 0; i < nodeDeclList.size(); i++) {
-                lines += "var int " + nodeDeclList.get(i).generateCode() + "\n";
-            }
-            return lines;
+            return "";
         }
     }
 
@@ -296,6 +308,7 @@ public class AbstractSyntaxTree {
      * Abstract Syntax Tree Members
      */
     private NodeProgram root = new NodeProgram(new NodeDecls(), new NodeStmts());
+    private int nextOpenRegister = 1;
 
     /**
      * Abstract Syntax Tree Methods
@@ -334,20 +347,28 @@ public class AbstractSyntaxTree {
      */
     private List<String> generatedLines = new ArrayList<>();
     /**
+     * List to store registers with their respected variable name
+     * First String is register name, Second String is variable name
+     */
+    private Map<String, String> registerIdMap = new HashMap<>();
+    /**
      * Generate Pseudo Assembler Code
      * Traverse the tree
      * The parent node should call this method on child nodes as necessary
      */
     private void generateCode() {
-        // Variable declaration section
+        // Generate Code for Declarations
         generatedLines.add(".data");
-        // Generate Code for the Declarations
-        generatedLines.add(this.root.nodeDecls.generateCode());
-        // Code section
+        for (int i = 0; i < root.nodeDecls.nodeDeclList.size(); i++) {
+            String var = root.nodeDecls.nodeDeclList.get(i).variableName;
+            String line = String.format("var int %s", var);
+            generatedLines.add(line);
+        }
+        // Generate Code for Statements
         generatedLines.add(".code");
-        // Generate Code for the Statements
-        generatedLines.add(this.root.nodeStmts.generateCode());
-        this.root.nodeStmts.generateCode();
+        for (int i = 0; i < root.nodeStmts.nodeStmtList.size(); i++) {
+            root.nodeStmts.nodeStmtList.get(i).generateCode();
+        }
     }
 
     /**
@@ -356,13 +377,25 @@ public class AbstractSyntaxTree {
      * @return
      */
     public String getCode() {
-        // Call generateCode() first to populate the List<String> generatedLines member variable
+        generatedLines.clear();
         generateCode();
         StringBuilder code = new StringBuilder();
         for (String generatedLine : generatedLines) {
             code.append(generatedLine).append("\n");
         }
         return code.toString();
+    }
+
+    /**
+     * Method to get next open register
+     * Increment register count by 1
+     * This method does not reuse registers
+     * @return
+     */
+    private String getNextOpenRegister() {
+        String reg = String.format("ri%d", nextOpenRegister);
+        nextOpenRegister++;
+        return reg;
     }
 
 }
