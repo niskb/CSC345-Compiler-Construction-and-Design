@@ -219,6 +219,9 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
+            for (int i = 0; i < nodeStmtList.size(); i++) {
+                nodeStmtList.get(i).generateCode();
+            }
             return "";
         }
     }
@@ -253,6 +256,14 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
+            String reg1 = leftHandSide.generateCode();
+            String reg2 = rightHandSide.generateCode();
+            String label = "ifStatementLabel" + getNextIfLabelNumber();
+            String line1 = String.format("bne %s, %s, %s", reg1, reg2, label);
+            generatedLines.add(line1);
+            nodeStmts.generateCode();
+            String line2 = String.format(":%s", label);
+            generatedLines.add(line2);
             return "";
         }
     }
@@ -309,6 +320,7 @@ public class AbstractSyntaxTree {
      */
     private NodeProgram root = new NodeProgram(new NodeDecls(), new NodeStmts());
     private int nextOpenRegister = 1;
+    private int nextIfLabel = 1;
 
     /**
      * Abstract Syntax Tree Methods
@@ -396,6 +408,14 @@ public class AbstractSyntaxTree {
         String reg = String.format("ri%d", nextOpenRegister);
         nextOpenRegister++;
         return reg;
+    }
+
+    /**
+     * Returns the next label number when branching
+     * @return
+     */
+    private int getNextIfLabelNumber() {
+        return nextIfLabel++;
     }
 
 }
