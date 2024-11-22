@@ -4,12 +4,5 @@ declare y
 set w = 5
 set x = 10
 set y = 15
-calc w = x + y + 4
-if x = y then
+calc w = 10 + y + 4 + 1
 print w
-print x
-endif
-set w = 10
-if w = x then
-print y
-endif

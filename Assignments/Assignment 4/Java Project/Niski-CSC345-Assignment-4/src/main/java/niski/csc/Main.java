@@ -30,9 +30,7 @@ public class Main {
         boolean parse = myParser.parse(program);
         System.out.println("Result: " + parse + "\n");
         if (parse) {
-            myParser.abstractSyntaxTree.display();
             String code = myParser.abstractSyntaxTree.getCode();
-            System.out.println(code);
             run(code);
         }
     }

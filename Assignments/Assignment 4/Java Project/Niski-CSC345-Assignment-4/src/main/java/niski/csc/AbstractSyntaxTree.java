@@ -110,7 +110,7 @@ public class AbstractSyntaxTree {
                 leftHandSide.display();
                 System.out.print("RHS: ");
                 rightHandSide.display();
-            } else { // There is no right-hand side because there is no PLUS
+            } else {
                 leftHandSide.display();
                 System.out.println();
             }
@@ -118,7 +118,14 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            return "";
+            if (null != rightHandSide) {
+                String line = String.format("add %s, %s, %s", leftHandSide.generateCode(), rightHandSide.generateCode(), calcTempReg);
+                generatedLines.add(line);
+            } else {
+                String line = String.format("add %s, %s, %s", leftHandSide.generateCode(), calcTempReg, calcTempReg);
+                generatedLines.add(line);
+            }
+            return calcTempReg;
         }
     }
 
@@ -199,8 +206,13 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
-            // Generate code for Expr first then add onto nodeId
-            return "";
+            calcTempReg = getNextOpenRegister();
+            String nodeReg = nodeId.generateCode();
+            String exprReg = nodeExpr.generateCode();
+            String line = String.format("storeintvar %s, %s", exprReg, nodeId.variableName);
+            generatedLines.add(line);
+            registerIdMap.replace(nodeId.variableName, exprReg);
+            return nodeReg;
         }
     }
 
@@ -283,6 +295,11 @@ public class AbstractSyntaxTree {
 
         @Override
         public String generateCode() {
+            for (int i = 0; i < nodeDeclList.size(); i++) {
+                String var = nodeDeclList.get(i).variableName;
+                String line = String.format("var int %s", var);
+                generatedLines.add(line);
+            }
             return "";
         }
     }
@@ -301,10 +318,8 @@ public class AbstractSyntaxTree {
 
         @Override
         public void display() {
-            // Traverse Declarations
             System.out.println("AST Declarations");
             nodeDecls.display();
-            // Traverse Statements
             System.out.println("\nAST Statements");
             nodeStmts.display();
         }
@@ -321,6 +336,7 @@ public class AbstractSyntaxTree {
     private NodeProgram root = new NodeProgram(new NodeDecls(), new NodeStmts());
     private int nextOpenRegister = 1;
     private int nextIfLabel = 1;
+    private String calcTempReg = "";
 
     /**
      * Abstract Syntax Tree Methods
@@ -369,18 +385,10 @@ public class AbstractSyntaxTree {
      * The parent node should call this method on child nodes as necessary
      */
     private void generateCode() {
-        // Generate Code for Declarations
         generatedLines.add(".data");
-        for (int i = 0; i < root.nodeDecls.nodeDeclList.size(); i++) {
-            String var = root.nodeDecls.nodeDeclList.get(i).variableName;
-            String line = String.format("var int %s", var);
-            generatedLines.add(line);
-        }
-        // Generate Code for Statements
+        root.nodeDecls.generateCode();
         generatedLines.add(".code");
-        for (int i = 0; i < root.nodeStmts.nodeStmtList.size(); i++) {
-            root.nodeStmts.nodeStmtList.get(i).generateCode();
-        }
+        root.nodeStmts.generateCode();
     }
 
     /**
